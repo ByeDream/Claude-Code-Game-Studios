@@ -5,32 +5,39 @@
 
 ## Engine & Language
 
-- **Engine**: [TO BE CONFIGURED — run /setup-engine]
-- **Language**: [TO BE CONFIGURED]
-- **Rendering**: [TO BE CONFIGURED]
-- **Physics**: [TO BE CONFIGURED]
+- **Engine**: Web (React 19 + HTML Canvas)
+- **Language**: TypeScript (strict mode)
+- **Rendering**: HTML Canvas (棋盘/战斗场景) + React DOM (UI 面板/菜单)
+- **Framework**: React 19 + Vite
+- **Physics**: N/A (卡牌/自走棋游戏，无物理引擎需求)
 
 ## Naming Conventions
 
-- **Classes**: [TO BE CONFIGURED]
-- **Variables**: [TO BE CONFIGURED]
-- **Signals/Events**: [TO BE CONFIGURED]
-- **Files**: [TO BE CONFIGURED]
-- **Scenes/Prefabs**: [TO BE CONFIGURED]
-- **Constants**: [TO BE CONFIGURED]
+- **Components**: PascalCase (e.g., `HeroCard`, `BattleBoard`)
+- **Variables/Functions**: camelCase (e.g., `heroList`, `calculateDamage`)
+- **Custom Hooks**: camelCase with `use` prefix (e.g., `useBattleState`)
+- **Events/Callbacks**: camelCase with `on`/`handle` prefix (e.g., `onHeroSelect`, `handleDragEnd`)
+- **Files (components)**: PascalCase matching component (e.g., `HeroCard.tsx`)
+- **Files (utilities)**: camelCase (e.g., `battleEngine.ts`, `bondSystem.ts`)
+- **Constants**: UPPER_SNAKE_CASE (e.g., `MAX_HEROES_ON_BOARD`, `BASE_ATTACK_SPEED`)
+- **Types/Interfaces**: PascalCase with descriptive names (e.g., `HeroData`, `BattleState`)
+- **Enums**: PascalCase name, PascalCase members (e.g., `Faction.Wei`, `HeroTier.S`)
+- **Directories**: kebab-case (e.g., `battle-system/`, `hero-cards/`)
 
 ## Performance Budgets
 
-- **Target Framerate**: [TO BE CONFIGURED]
-- **Frame Budget**: [TO BE CONFIGURED]
-- **Draw Calls**: [TO BE CONFIGURED]
-- **Memory Ceiling**: [TO BE CONFIGURED]
+- **Target Framerate**: 60fps (Canvas 战斗动画)
+- **Frame Budget**: 16.6ms
+- **Draw Calls**: N/A (Canvas 2D)
+- **Memory Ceiling**: [TO BE CONFIGURED — profile after MVP]
+- **Initial Load**: < 3s (code splitting, lazy loading)
+- **Bundle Size**: < 500KB gzipped (excluding art assets)
 
 ## Testing
 
-- **Framework**: [TO BE CONFIGURED]
-- **Minimum Coverage**: [TO BE CONFIGURED]
-- **Required Tests**: Balance formulas, gameplay systems, networking (if applicable)
+- **Framework**: Vitest + React Testing Library
+- **Minimum Coverage**: [TO BE CONFIGURED — set after core systems stabilize]
+- **Required Tests**: Balance formulas, battle engine logic, bond system calculations, hero stat calculations
 
 ## Forbidden Patterns
 
@@ -40,7 +47,10 @@
 ## Allowed Libraries / Addons
 
 <!-- Add approved third-party dependencies here -->
-- [None configured yet — add as dependencies are approved]
+- **React 19** — UI framework
+- **Vite** — Build tool
+- **TypeScript** — Language (strict mode)
+- [Additional libraries to be approved as needed]
 
 ## Architecture Decisions Log
 

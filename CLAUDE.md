@@ -5,14 +5,15 @@ Each agent owns a specific domain, enforcing separation of concerns and quality.
 
 ## Technology Stack
 
-- **Engine**: [CHOOSE: Godot 4 / Unity / Unreal Engine 5]
-- **Language**: [CHOOSE: GDScript / C# / C++ / Blueprint]
+- **Engine**: Web (React 19 + HTML Canvas)
+- **Language**: TypeScript (strict mode)
 - **Version Control**: Git with trunk-based development
-- **Build System**: [SPECIFY after choosing engine]
-- **Asset Pipeline**: [SPECIFY after choosing engine]
+- **Build System**: Vite
+- **Asset Pipeline**: Static imports + public/ directory
+- **Package Manager**: npm
 
-> **Note**: Engine-specialist agents exist for Godot, Unity, and Unreal with
-> dedicated sub-specialists. Use the set matching your engine.
+> **Note**: This is a Web-based game. Engine-specialist agents (Godot, Unity,
+> Unreal) are not active. Godot migration is a future option, not a current plan.
 
 ## Project Structure
 
@@ -20,7 +21,8 @@ Each agent owns a specific domain, enforcing separation of concerns and quality.
 
 ## Engine Version Reference
 
-@docs/engine-reference/godot/VERSION.md
+> Web-based project — no engine version pinning required.
+> If migrating to Godot in the future, run `/setup-engine godot` to configure.
 
 ## Technical Preferences
 
