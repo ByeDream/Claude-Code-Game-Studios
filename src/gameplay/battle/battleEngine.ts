@@ -146,7 +146,7 @@ function battleUnitToFakeHeroInstance(unit: BattleUnit): HeroInstance {
     growthBonus: zeroStats,
     equipBonus: zeroStats,
     bondModifier: zeroStats,
-    statusModifier: 0,
+    statusModifier: zeroStats,
     equippedItemIds: [],
     activeStatusIds: [],
     isKnockedOut: unit.isKnockedOut,

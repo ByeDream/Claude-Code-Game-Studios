@@ -320,10 +320,13 @@ export interface HeroInstance {
   bondModifier: BaseStats
 
   /**
-   * Multiplicative status modifier (percentage as decimal, e.g., -0.20 = −20%).
-   * Written by the Status System. Range: −0.5 to +1.0. Initialized to 0.
+   * Per-stat multiplicative status modifier (percentage as decimal, e.g., -0.20 = −20%).
+   * Written by the Status System. Range per stat: −0.5 to +1.0. Initialized to all-zero.
+   * Each stat receives its own modifier — e.g., ATK debuff affects STR only, not DEF.
+   *
+   * @see design/gdd/status-system.md — Stat Modifier Calculation
    */
-  statusModifier: number
+  statusModifier: BaseStats
 
   /**
    * IDs of items currently equipped by this hero.

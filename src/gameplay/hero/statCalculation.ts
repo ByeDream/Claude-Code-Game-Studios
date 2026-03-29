@@ -80,7 +80,7 @@ export function calculateFinalStat(hero: HeroInstance, stat: StatType): number {
   const equipBonus  = hero.equipBonus[stat]
 
   const additive    = baseStat + growthBonus + equipBonus
-  const multiplier  = 1 + hero.bondModifier[stat] + hero.statusModifier
+  const multiplier  = 1 + hero.bondModifier[stat] + hero.statusModifier[stat]
 
   const rawFinal    = additive * multiplier
 

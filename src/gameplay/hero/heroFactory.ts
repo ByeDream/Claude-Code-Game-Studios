@@ -79,7 +79,7 @@ export function createHeroInstance(data: HeroData, level: number = 1): HeroInsta
     growthBonus,
     equipBonus,
     bondModifier:    createZeroStats(),
-    statusModifier:  0,
+    statusModifier:  createZeroStats(),
     equippedItemIds: [],
     activeStatusIds: [],
     isKnockedOut:    false,
