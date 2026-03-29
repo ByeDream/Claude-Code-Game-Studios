@@ -5,7 +5,7 @@ Each agent owns a specific domain, enforcing separation of concerns and quality.
 
 ## Technology Stack
 
-- **Engine**: Web (React 19 + HTML Canvas)
+- **Engine**: Web (React 19 + HTML Canvas), Tauri v2 for desktop release
 - **Language**: TypeScript (strict mode)
 - **Version Control**: Git with trunk-based development
 - **Build System**: Vite

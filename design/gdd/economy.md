@@ -41,7 +41,6 @@
 | 事件奖励 | ✅ 部分事件 | ✅ 部分事件 | 事件选择 |
 | 卖出装备 | ✅ 装备价值的 50% | ❌ | 玩家主动 |
 | 拆解装备 | ❌ | ✅ 按装备等级 | 玩家主动 |
-| 劝降失败安慰奖 | ✅ 少量 | ❌ | 劝降失败时 |
 
 #### 4. Sinks (排水口) — 资源消耗
 
@@ -90,6 +89,8 @@ interface EconomyAPI {
 ## Formulas
 
 ### Battle Rewards
+
+> **注意**: 此公式已被 Loot/Rewards 系统的宝箱机制替代。战斗后的 Gold/Material 奖励通过宝箱三选一发放，不再使用下方固定公式。以下公式仅作为宝箱数值校准的参考基准。
 
 ```
 battleGoldReward = BASE_GOLD * (1 + nodeIndex * GOLD_SCALING) * difficultyBonus

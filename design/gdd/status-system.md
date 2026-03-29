@@ -283,12 +283,12 @@ actualDuration = target.tier >= S ? max(1, floor(baseDuration * TENACITY_REDUCTI
 
 ## Dependencies
 
-**上游依赖**:
+**双向依赖**:
 
 | System | Direction | Nature | Hard/Soft |
 |--------|-----------|--------|-----------|
 | Hero System | Status modifies Hero | 写入 statusModifier | Hard |
-| Battle Engine | Battle drives Status | 施加/移除/结算时机 | Hard |
+| Battle Engine | Battle ↔ Status | Battle Engine 驱动状态施加/移除时机，Status System 写入 Hero 的 statusModifier 供 Battle 读取。两者为对等双向关系。 | Hard |
 
 **下游依赖**:
 

@@ -138,9 +138,9 @@ levelUpCost = BASE_LEVEL_COST + (targetLevel - 2) * COST_INCREMENT + (targetLeve
 
 | Variable | Initial Value | Safe Range | Description |
 |----------|--------------|------------|-------------|
-| BASE_LEVEL_COST | TBD | 2-10 | Lv.1→2 的材料消耗 |
-| COST_INCREMENT | TBD | 1-5 | 每级线性递增 |
-| COST_ACCELERATION | TBD | 0.5-2 | 每级二次方递增 |
+| BASE_LEVEL_COST | 5 (初始估算，待 playtest 校准) | 2-10 | Lv.1→2 的材料消耗 |
+| COST_INCREMENT | 2 (初始估算，待 playtest 校准) | 1-5 | 每级线性递增 |
+| COST_ACCELERATION | 1 (初始估算，待 playtest 校准) | 0.5-2 | 每级二次方递增 |
 
 **Calibration target**: 5 人到 Lv.8-9 的总消耗 ≈ Run 总材料产出的 60-75%，剩余 25-40% 用于装备强化。
 
@@ -200,9 +200,9 @@ scaledSkillValue = baseSkillValue * (1 + (level - 1) * SKILL_SCALING_RATE)
 | Parameter | Initial | Safe Range | Effect of ↑ | Effect of ↓ |
 |-----------|---------|------------|------------|------------|
 | `MAX_LEVEL` | 10 | 8-15 | 更长养成曲线，更多取舍 | 更快到顶 |
-| `BASE_LEVEL_COST` | TBD | 2-10 | 升级更贵 | 升级更便宜 |
-| `COST_INCREMENT` | TBD | 1-5 | 后期升级更贵 | 成本曲线更平 |
-| `COST_ACCELERATION` | TBD | 0.5-2 | 高等级极贵 | 高等级尚可 |
+| `BASE_LEVEL_COST` | 5 (初始估算，待 playtest 校准) | 2-10 | 升级更贵 | 升级更便宜 |
+| `COST_INCREMENT` | 2 (初始估算，待 playtest 校准) | 1-5 | 后期升级更贵 | 成本曲线更平 |
+| `COST_ACCELERATION` | 1 (初始估算，待 playtest 校准) | 0.5-2 | 高等级极贵 | 高等级尚可 |
 | `SKILL_SCALING_RATE` | 0.08 | 0.05-0.12 | 技能成长更快 | 技能成长更慢 |
 | `LEGEND_GROWTH_MULTIPLIER` | 1.25 | 1.1-1.5 | 传说变体成长更快 | 传说变体成长接近基础版 |
 

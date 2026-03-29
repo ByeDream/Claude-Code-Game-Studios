@@ -192,7 +192,7 @@
 | **Hero System** | Equipment → Hero | 每次装备变更时重算 `equipBonus` = sum of all equipped items' stat bonuses |
 | **Economy** | Equipment ↔ Economy | 卖出: `economy.earn(sellGold, 0)` / 拆解: `economy.earn(0, disassembleMat)` / 强化: `economy.spend(gold, material)` |
 | **Battle Engine** | Equipment → Battle | 战斗开始时读取所有 Deployed 武将的装备效果列表，注册战斗触发器 |
-| **Loot/Rewards** | Loot → Equipment | 战利品产出装备实例，调用 `addToBackpack(equipment)` |
+| **Loot/Rewards** | Loot → Equipment | 战利品产出装备实例，调用 `triggerEquipFlow(equipment)` |
 | **Shop** | Shop → Equipment | 商店出售装备实例，购买后加入背包 |
 | **Hero Detail UI** | Equipment → UI | 提供装备数据用于显示 |
 

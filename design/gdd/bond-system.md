@@ -138,7 +138,7 @@ bondModifier[stat] = factionBonus[stat] + sum(activeHistoricalBonds.bonuses[stat
 **公共接口**:
 ```typescript
 interface BondAPI {
-  recalculate(roster: Hero[]): BondResult;
+  recalculate(playerRoster: Hero[], enemyRoster?: Hero[]): BondResult;
   getActiveBonds(): ActivatedBond[];
   getAllBonds(): BondDefinition[];         // 全部羁绊定义（含未激活，用于图鉴/UI）
   getBondModifier(heroId: string): StatModifier;
@@ -149,6 +149,8 @@ interface BondResult {
   perHeroModifiers: Map<string, StatModifier>;  // 每个武将的加成
 }
 ```
+
+> **注意**：敌方阵容也享受羁绊加成。传入 enemyRoster 时，为敌方独立计算羁绊效果。
 
 ## Formulas
 

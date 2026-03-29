@@ -246,7 +246,7 @@
 
 | Consideration | Assessment |
 | ---- | ---- |
-| **Engine** | Web (React 19 + HTML Canvas + TypeScript)，Godot 移植为远期可选项 |
+| **Engine** | Web (React 19 + HTML Canvas + TypeScript)，Tauri v2 打包为独立桌面应用。开发时纯 Web 流程（Agent 可自动测试/截图），发布时零改动打包 |
 | **Build Tool** | Vite |
 | **Rendering** | HTML Canvas (棋盘/战斗) + React DOM (UI) |
 | **Key Technical Challenges** | 武将技能多样性实现；羁绊组合爆炸测试；历史事件脚本系统；自走棋 AI |

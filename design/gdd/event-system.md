@@ -43,13 +43,12 @@
 战斗节点由 Battle Engine 驱动，事件系统仅负责：
 - 定义该节点的敌方阵容（`EnemyEncounter`）
 - 战斗结束后触发 Loot 系统生成宝箱奖励（三选一：装备/Gold/Material）
-- 战后如有可劝降敌将，进入劝降环节
 
 **普通战斗**：
 1. 查看敌方阵容
 2. 编排站位 → 开战
-3. 胜利 → 宝箱三选一（铁~银箱）→ 可能触发劝降 → 返回地图
-4. 失败 → Run 结束
+3. 胜利 → 宝箱三选一（铁~银箱）→ 返回地图
+4. 失败 → 普通/精英战：无奖励，返回地图；Boss 战：扣除荣誉值，荣誉值归零则 Run 结束
 
 **精英战斗**：
 - 同普通战斗，但敌人更强
@@ -78,6 +77,8 @@
 - 已拥有的武将不会出现在候选中
 - 候选数量：RECRUIT_POOL_SIZE（初始 3-5，待调优）
 
+> **MVP Fallback（无 Meta Progression 时）**：招募候选池 = 当前剧本所有未拥有武将的随机抽样（Tier 权重：C:50%, B:35%, A:15%），不受亲密度影响。
+
 #### 4. Shop Node (市集节点)
 
 **交互流程**：
@@ -93,6 +94,8 @@
 - 装备熟练度影响：熟练度越高，该装备出现在商品中的概率越高
 - 熟练度达到阈值的装备进入池子（跨 Run 局外积累解锁）
 - 定价使用 Equipment System 的 basePrice（不打折，部分事件/君主能力可能提供折扣）
+
+> **MVP Fallback（无 Meta Progression 时）**：商品库存 = 随 nodeIndex 进度的随机装备池，不受熟练度影响。
 
 #### 5. Rest Node (锻造/训练节点)
 
@@ -275,7 +278,7 @@ interface MysteryNode extends MapNode {
 | **Battle Engine** | Event → Battle | 战斗节点传入 `EnemyEncounter`，接收 `BattleResult` |
 | **Loot/Rewards** | Event → Loot | 战斗胜利后调用 Loot 系统生成宝箱 |
 | **Economy** | Event ↔ Economy | 招募/市集/锻造消耗 Gold/Material；通用事件产出资源 |
-| **Hero System** | Event → Hero | 招募产出武将实例；劝降产出武将；事件解锁武将掉落条件 |
+| **Hero System** | Event → Hero | 招募产出武将实例；事件解锁武将掉落条件 |
 | **Equipment System** | Event → Equipment | 市集出售装备；事件强化装备 |
 | **Hero Growth** | Event → Growth | 锻造/训练节点调用升级/强化接口；事件直接强化武将 |
 | **Run Map** | Map ↔ Event | Map 提供节点布局和路径结构；Event 提供节点内容 |

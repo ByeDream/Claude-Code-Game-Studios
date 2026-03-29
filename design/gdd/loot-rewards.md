@@ -90,7 +90,7 @@
 **多宝箱流程**（Boss 战等）：
 1. 所有宝箱同时显示为 Pending 状态
 2. 玩家依次点击打开，逐个三选一
-3. 全部 Claimed 后进入下一结算步骤（劝降）
+3. 全部 Claimed 后进入下一结算步骤
 
 ### Interactions with Other Systems
 
@@ -309,13 +309,3 @@ chestCount = BASE_COUNT[difficulty] + (nodeIndex >= BONUS_CHEST_THRESHOLD ? 1 : 
 - [ ] 普通战 1 箱、精英战 1-2 箱、Boss 战 2-3 箱
 - [ ] 所有 Tuning Knobs 可通过配置文件调整，无硬编码
 - [ ] Performance: 宝箱生成和选项 roll 在 <5ms 内完成
-
-## Open Questions
-
-| Question | Owner | Deadline | Resolution |
-|----------|-------|----------|-----------|
-| 所有数值（Gold/Mat 基础值、装备池权重、Named 概率）需配合 Economy + Hero Growth 做 playtest 联合校准 | Systems Designer | Prototype | playtest 迭代调优 |
-| Economy GDD 的战斗奖励公式需更新——从固定发放改为由 Loot 宝箱机制分配 | Game Designer | 下次 Economy 更新 | 修改 Economy GDD |
-| 是否需要"特殊选项"类别（如训练令、重铸券）扩展三选一的第四种选项类型 | Game Designer | Vertical Slice | 视 playtest 反馈 |
-| 宝箱开启动画时长——太短无仪式感，太长打断节奏 | UX Designer | Prototype | 原型验证后确定 |
-| 非战斗事件（宝箱节点、探索）调用 Loot 系统时的具体参数传递 | Game Designer | Event System GDD | 设计事件系统时确定 |

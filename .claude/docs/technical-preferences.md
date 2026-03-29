@@ -9,7 +9,29 @@
 - **Language**: TypeScript (strict mode)
 - **Rendering**: HTML Canvas (棋盘/战斗场景) + React DOM (UI 面板/菜单)
 - **Framework**: React 19 + Vite
+- **Desktop Shell**: Tauri v2 (发布为独立桌面应用)
 - **Physics**: N/A (卡牌/自走棋游戏，无物理引擎需求)
+
+### Development vs Release Architecture
+
+**开发时**：纯 Web 开发流程
+```
+[Vite Dev Server] → [浏览器] ← Agent 测试/截图/Playwright
+                  → React + Canvas (游戏代码)
+```
+- `npm run dev` 启动，浏览器热更新
+- Agent 可通过 Playwright/Puppeteer 自动化测试和视觉验证
+- Vitest 运行单元/集成测试
+
+**发布时**：Tauri 打包为独立桌面应用
+```
+[Tauri App Shell] → [系统 WebView] → React + Canvas (同一份游戏代码)
+                  → [Rust 后端] → 文件系统（存档/配置）
+```
+- 游戏代码零改动，仅运行容器不同
+- 打包产物 ~10-20MB（vs Electron ~150MB+）
+- 无服务器依赖，离线可用
+- Rust 后端用于文件 I/O（存档、配置持久化）
 
 ## Naming Conventions
 
@@ -50,6 +72,8 @@
 - **React 19** — UI framework
 - **Vite** — Build tool
 - **TypeScript** — Language (strict mode)
+- **Tauri v2** — Desktop app shell (发布打包)
+- **Playwright** — E2E testing & Agent 视觉验证
 - [Additional libraries to be approved as needed]
 
 ## Architecture Decisions Log

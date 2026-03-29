@@ -7,7 +7,7 @@
 
 ## Overview
 
-武将系统是煮酒的数据基础层，定义了游戏中所有武将角色的数据模型——包括基础属性（武力、智力、防御、生命、速度）、技能组、阵营归属、稀有度（Tier）、历史背景标签和立绘引用。武将既是战斗中的作战单位，也是玩家收集和养成的核心对象。玩家通过招募、劝降、事件奖励等方式获取武将，在阵容编排中选择上场武将并安排站位。本系统为战斗系统、羁绊系统、养成系统、装备系统等 15 个下游系统提供统一的武将数据接口，是全游戏最底层的依赖。
+武将系统是煮酒的数据基础层，定义了游戏中所有武将角色的数据模型——包括基础属性（武力、智力、防御、生命、速度）、技能组、阵营归属、稀有度（Tier）、历史背景标签和立绘引用。武将既是战斗中的作战单位，也是玩家收集和养成的核心对象。玩家通过招募、事件奖励等方式获取武将，在阵容编排中选择上场武将并安排站位。本系统为战斗系统、羁绊系统、养成系统、装备系统等 15 个下游系统提供统一的武将数据接口，是全游戏最底层的依赖。
 
 ## Player Fantasy
 
@@ -79,7 +79,7 @@ finalStat = (baseStat + growthBonus + equipBonus) * (1 + bondModifier + statusMo
 |------|------|-------------|---------|------|
 | C | 普通武将 | 较低 | 1 被动 | 很容易（初始/事件） |
 | B | 合格武将 | 中等 | 1 被动 | 容易（事件/招募） |
-| A | 优秀武将 | 中高 | 1被动 + 1主动 | 中等（事件/劝降） |
+| A | 优秀武将 | 中高 | 1被动 + 1主动 | 中等（事件/Boss奖励） |
 
 **传说变体 (S / SS / SSS)**：同一武将的巅峰形态。跨 Run 通过特殊条件解锁。
 
@@ -196,10 +196,11 @@ finalStat = (baseStat + growthBonus + equipBonus) * (1 + bondModifier + statusMo
 |---------|------|------------|------|
 | 初始随从 | 开局君主自带的起始武将 | C-B | 随君主不同而不同 |
 | 招募事件 | 地图节点，消耗金币从候选池中选择 | C-A | 候选池受剧本和进度影响 |
-| 劝降 | 战斗胜利后概率劝降敌方武将 | C-A | 成功率与武将 Tier 反比；特定历史事件可提升概率 |
 | 历史事件 | 特殊剧情节点触发 (e.g., 三顾茅庐→诸葛亮) | B-A | 尊重历史故事线 |
-| Boss 奖励 | 击败章节 Boss 后的奖励选择 | A | 稀有但可靠 |
+| Boss 奖励 | 击败章节 Boss 后的奖励选择 | A-S+ | Boss 击败后概率掉落，S+ 仅从 Boss 掉落 |
 | 跨Run解锁 | 完成特殊成就/挑战条件 | S-SSS | 传说变体的唯一获取途径 |
+
+> **注意**：S+ 传说变体的首次获取来自 Boss 战掉落。使用后积累亲密度，可进入局外招募池。
 
 **设计原则**：
 - 基础版 (C-A) 在单次 run 内即可获得足够阵容
@@ -253,7 +254,7 @@ finalStat = (baseStat + growthBonus + equipBonus) * (1 + bondModifier + statusMo
 | **Battle Engine** | 读取 Hero | 读取 Deployed 武将的最终属性 + 技能 + 武技/军师技，驱动战斗逻辑 |
 | **Battle AI** | 读取 Hero | 读取武将技能、目标类型、属性，决定自动行为 |
 | **Enemy System** | 共享模型 | 敌方武将复用 Hero 数据模型（可能有特殊敌人专属字段） |
-| **Event System** | 触发 → Hero | 事件产出新武将实例（招募/劝降/历史事件） |
+| **Event System** | 触发 → Hero | 事件产出新武将实例（招募/历史事件） |
 | **Loot System** | 触发 → Hero | 战利品可能包含武将卡 |
 | **Status System** | 修改 Hero (runtime) | 战斗中施加/移除状态效果，影响 `statusModifier` |
 | **Campaign System** | 约束 Hero | 剧本决定哪些武将在当前 run 的可获取池中 |
@@ -276,7 +277,7 @@ finalStat = (baseStat + growthBonus + equipBonus) * (1 + bondModifier + statusMo
 | baseStat | int | 1-200 | Hero data file | 武将基础属性值（由 Tier 和角色设计决定） |
 | growthBonus | int | 0-100 | Hero Growth System | 等级提升带来的属性加成 |
 | equipBonus | int | 0-80 | Equipment System | 装备提供的属性加成 |
-| bondModifier | float | 0.0-0.5 | Bond System | 羁绊加成（百分比） |
+| bondModifier | float | 0.0-0.25 | Bond System | 羁绊加成（百分比） |
 | statusModifier | float | -0.5-1.0 | Status System | 战斗中 buff/debuff（百分比） |
 
 **Expected output range**: finalStat 约 1-500 (满级满装满羁绊满buff)
@@ -295,27 +296,12 @@ finalStat = (baseStat + growthBonus + equipBonus) * (1 + bondModifier + statusMo
 
 **注意**: 同 Tier 内总和范围相近，但单项属性分布差异大。例如 A 级关羽可能是 STR:38 INT:12 DEF:28 HP:35 SPD:18 (总和131)，A 级诸葛亮可能是 STR:10 INT:40 DEF:15 HP:25 SPD:35 (总和125)。
 
-### Persuasion (劝降) Success Rate
-
-```
-persuadeChance = baseChance * tierPenalty * eventBonus
-```
-
-| Variable | Type | Range | Source | Description |
-|----------|------|-------|--------|-------------|
-| baseChance | float | 0.5 | constant | 基础劝降成功率 |
-| tierPenalty | float | 0.3-1.0 | Hero tier | C=1.0, B=0.8, A=0.5, S+=0.3 |
-| eventBonus | float | 1.0-3.0 | Event System | 特定历史事件的加成倍率 |
-
-**Expected output range**: 15%-50% (无事件加成)，最高 100%（特殊历史事件如三顾茅庐）
-
 ## Edge Cases
 
 | Scenario | Expected Behavior | Rationale |
 |----------|------------------|-----------|
 | 属性被 debuff 减至 0 以下 | Clamp 到 1，属性永远不为 0 或负数 | 防止除零错误和逻辑异常 |
 | 同名基础版和传说变体同时在阵容中 | 系统阻止，UI 提示"同名武将不可同时上场" | 防止数据冲突和平衡问题 |
-| 劝降一个已拥有的武将 | 允许劝降，转换为经验/材料奖励 | 不浪费玩家的劝降机会 |
 | 所有 Deployed 武将在战斗中被 KO | 战斗判负，进入失败结算 | 这是正常的失败条件 |
 | 武将 tags 为空 | 允许，但该武将不会触发任何基于 tag 的羁绊 | C 级小兵型武将可能没有特征标签 |
 | 传说变体的基础版未被拥有 | 允许直接使用传说变体，不要求拥有基础版 | 传说变体是独立卡牌，不是"升级" |
@@ -345,7 +331,7 @@ persuadeChance = baseChance * tierPenalty * eventBonus
 | Hero Detail UI | depends on Hero | 显示武将信息 | Hard |
 | Battle UI | depends on Hero | 显示战斗中武将 | Hard |
 
-**注意**：Status System 需要作为新系统加入 systems-index（在讨论中确认）。
+**注意**：Status System 已加入 systems-index (#21, Designed)。
 
 ## Tuning Knobs
 
@@ -354,8 +340,6 @@ persuadeChance = baseChance * tierPenalty * eventBonus
 | `BENCH_MAX_SIZE` | 8 | 5-12 | 更多阵容灵活性，降低取舍压力 | 更强的取舍决策，更紧张的资源管理 |
 | `DEPLOY_MAX_SIZE` | 5 | 3-7 | 更多武将上场，羁绊更容易触发 | 更精简阵容，每个位置权重更大 |
 | `TIER_STAT_MULTIPLIER` | 见Formulas | ±20% | Tier 差距加大，高 Tier 更强势 | Tier 差距缩小，低 Tier 更有价值 |
-| `PERSUADE_BASE_CHANCE` | 0.5 | 0.2-0.8 | 更容易获得新武将，收集体验更好 | 更难获得，每个武将更珍贵 |
-| `PERSUADE_TIER_PENALTY` | C:1.0 B:0.8 A:0.5 | ±0.2 | 高 Tier 更容易劝降 | 高 Tier 更难获得 |
 | `LEGEND_UNLOCK_DIFFICULTY` | (per variant) | — | 延长长期目标，增加重玩价值 | 缩短解锁周期，更快体验完整内容 |
 | `SKILL_SLOTS_BY_TIER` | C:1 B:1 A:2 S:2 SS:3 SSS:4 | ±1 per tier | 高Tier武将更强更多样 | 技能数量差距缩小 |
 | `ADVISOR_SKILL_PER_TURN` | 1 | 1-2 | 军师技影响力增大 | — |
@@ -393,8 +377,10 @@ persuadeChance = baseChance * tierPenalty * eventBonus
 | 出战人数 (DEPLOY_MAX_SIZE) 的最佳值需要配合棋盘大小设计 | Game Designer | Battle System GDD | 与 Battle Engine 同步决定 |
 | 传说变体的具体解锁条件需要配合 Meta Progression 设计 | Game Designer | Meta Progression GDD | 设计该系统时确定 |
 | 武技类型是否需要更多种类 | Game Designer | Balance Check | Prototype 后根据多样性需求扩展 |
-| Status System 需要作为新系统加入 systems-index | Producer | Next session | 更新 systems-index |
-| 军师技的冷却机制和使用次数需在 Battle Engine GDD 中细化 | Game Designer | Battle Engine GDD | 设计战斗系统时确定 |
+| Status System 需要作为新系统加入 systems-index | Producer | Next session | **已解决**：Status System 已加入 systems-index (#21, Designed) |
+| 军师技的冷却机制和使用次数需在 Battle Engine GDD 中细化 | Game Designer | Battle Engine GDD | **已解决**：Battle Engine GDD 已定义 ADVISOR_SKILL_USES |
+
+## Acceptance Criteria
 
 - [ ] 所有武将数据可从 JSON/配置文件加载，无硬编码
 - [ ] 五维属性计算 `finalStat` 正确应用所有加成（growth + equip + bond + status）
@@ -404,9 +390,8 @@ persuadeChance = baseChance * tierPenalty * eventBonus
 - [ ] 技能触发条件正确执行（on_kill, on_hp_below 等）
 - [ ] 武技和军师技仅在对应类型的 S+ 武将上生效
 - [ ] 4 阵营数据正确加载，用于羁绊系统查询
-- [ ] 劝降成功率计算与公式一致
 - [ ] 替补席上限 (`BENCH_MAX_SIZE`) 生效，超出时提示玩家取舍
-- [ ] 武将获取的 6 种方式均可正确产出武将实例
+- [ ] 武将获取的 5 种方式均可正确产出武将实例
 - [ ] 每个武将的 tags 和 bondKeys 可被其他系统正确读取
 - [ ] Performance: 武将属性计算在 1ms 内完成（单个武将）
 - [ ] MVP 有 15-20 个完整定义的武将数据文件可加载

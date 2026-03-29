@@ -48,7 +48,7 @@ defaultTarget = randomPick(aliveEnemies)
 
 | 覆盖类型 | 目标选择 | 示例 |
 |---------|---------|------|
-| 默认（无覆盖） | 最近敌人 | 大多数普攻和基础技能 |
+| 默认（无覆盖） | 随机敌人 | 大多数普攻和基础技能 |
 | `target_lowest_hp` | HP 绝对值最低的敌人 | 刺客型技能"斩杀" |
 | `target_highest_threat` | ATK 或 INT 最高的敌人 | 控制型技能"缴械" |
 | `target_backline` | 最远的敌人（后排） | 突阵类武技 |
@@ -157,7 +157,7 @@ shouldDamage = canUseSkill && skill.isDamage
 | 所有敌人距离完全相同 | 不适用——默认攻击始终随机 | 随机攻击模式 |
 | 治疗技能可用但没人受伤 | 不释放，改为普攻 | 不浪费技能 |
 | 控制技能目标已被控制 | 不释放该技能于该目标，选择其他目标或普攻 | 不浪费控制 |
-| 技能 CD 中只能普攻 | 正常普攻最近目标 | 普攻是基础行动 |
+| 技能 CD 中只能普攻 | 正常普攻随机目标 | 普攻是基础行动 |
 | 突阵武技的目标条件不满足 | 武技不触发，正常攻击 | 武技有触发条件 |
 | 只剩 1 个敌人 | 所有人集火该目标 | 自然行为 |
 | SPD 完全相同的两个武将 | 每回合随机决定先后 | 微量随机可接受 |
@@ -207,6 +207,6 @@ shouldDamage = canUseSkill && skill.isDamage
 
 | Question | Owner | Deadline | Resolution |
 |----------|-------|----------|-----------|
-| 距离计算方式需配合棋盘设计确定（曼哈顿 vs 欧几里得 vs 格子） | Game Designer | Battle Engine GDD | 与棋盘设计同步 |
+| 距离计算方式需配合棋盘设计确定（曼哈顿 vs 欧几里得 vs 格子） | Game Designer | Battle Engine GDD | **已解决**：棋盘为单行一维布局(pos 0-4)，距离 = |posA - posB| |
 | 是否需要"仇恨/嘲讽"机制让某些武将吸引火力 | Game Designer | Prototype | playtest 后视需求 |
 | AI behavior tags 是否需要更多种类 | Game Designer | Vertical Slice | 基础 3 种足够 MVP |

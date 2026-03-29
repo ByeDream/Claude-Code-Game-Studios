@@ -171,21 +171,37 @@ if (random() < critChance):
 | 超过 MAX_ROUNDS (30) | 判玩家负 |
 | Boss HP 归零（Boss 战） | 胜利（即使有护卫存活） |
 
-#### 10. Battle Result & Rewards
+#### 10. Honor System (荣誉值)
+
+荣誉值是 Boss 战失败惩罚的核心机制（类似大巴扎的 HP 机制）：
+
+| 规则 | 说明 |
+|------|------|
+| Run 开始时 | 荣誉值 = MAX_HONOR (初始 100, 待调优) |
+| 普通战斗失败 | 不扣荣誉值，仅无奖励 |
+| 中间 Boss 失败 | 扣 MINI_BOSS_HONOR_COST (30-50, 随进度递增) |
+| 最终 Boss 失败 | 扣 FINAL_BOSS_HONOR_COST (100, 即一次扣满) |
+| 荣誉值 ≤ 0 | Run 结束 |
+
+游戏越往后，中间 Boss 扣除的荣誉值越多，容错空间逐步缩小。
+
+#### 11. Battle Result & Rewards
 
 **胜利结算**：
 1. 显示战斗回顾（MVP 武将、伤害统计）
 2. 获得战利品（Gold + Material + 可能的装备）— Economy/Loot 系统处理
-3. 如有可劝降的正式敌将 → 进入劝降环节
-4. 返回 Run 地图
+3. 返回 Run 地图
 
-**失败结算**（普通战斗）：
-- 扣除部分 Gold 作为惩罚
+**失败结算**（普通战斗/精英战斗）：
+- 无法获得奖励，直接返回地图继续前进
 - 武将 HP 恢复到满（roguelike 简化）
-- 可选择重新挑战或跳过该节点
+- 不可重试该节点
 
 **失败结算**（Boss 战）：
-- Run 结束 → 显示 Run 总结 → 跨 Run 奖励结算 → 返回主界面
+- 中间 Boss 失败：扣除荣誉值（MINI_BOSS_HONOR_COST，随进度递增）
+- 最终 Boss 失败：扣除 FINAL_BOSS_HONOR_COST（一次扣满全部荣誉值）
+- 荣誉值 ≤ 0 → Run 结束 → 显示 Run 总结 → 跨 Run 奖励结算 → 返回主界面
+- 所有节点不允许重试
 
 ### States and Transitions
 
@@ -193,7 +209,7 @@ if (random() < critChance):
 |-------|-------|------|---------------|
 | **Preparation** | 进入战斗节点 | 点击「开战」→ Combat | ✅ 编排站位、选军师技 |
 | **Combat** | 开战 | 一方全灭/超时 → Resolution | ⚠️ 仅军师技（VS+）|
-| **Resolution** | 战斗结束 | 奖励/劝降完成 → 返回 Run Map | ✅ 劝降选择、装备处理 |
+| **Resolution** | 战斗结束 | 奖励完成 → 返回 Run Map | ✅ 装备处理 |
 
 ### Interactions with Other Systems
 
@@ -284,7 +300,9 @@ defaultTarget = randomPick(aliveEnemies)
 | CRIT_MULTIPLIER | 1.5 | 1.3-2.0 | 暴击伤害倍率 |
 | MAX_ROUNDS | 30 | 20-50 | 超时回合数 |
 | ADVISOR_SKILL_USES | 1 | 1-3 | 每场军师技使用次数 |
-| DEFEAT_GOLD_PENALTY | 0.2 | 0.1-0.3 | 失败扣除金币比例 |
+| MAX_HONOR | 100 | 50-200 | Run 初始荣誉值 |
+| MINI_BOSS_HONOR_COST | 30-50 | 20-60 | 中间 Boss 失败扣除荣誉值（随进度递增） |
+| FINAL_BOSS_HONOR_COST | 100 | 80-150 | 最终 Boss 失败扣除荣誉值 |
 
 ## Edge Cases
 
@@ -314,7 +332,7 @@ defaultTarget = randomPick(aliveEnemies)
 | Bond System | Battle reads Bond | 羁绊加成 | Hard |
 | Battle AI | Battle calls AI | 行动决策 | Hard |
 | Enemy System | Enemy → Battle | 敌方阵容 | Hard |
-| Status System | Battle ↔ Status | 状态施加/查询 | Hard |
+| Status System | Battle ↔ Status | 状态施加/查询 | Hard — 双向依赖：Battle Engine 驱动状态施加/移除时机，Status System 写入 Hero 的 statusModifier 供 Battle 读取 |
 
 **下游依赖**:
 
@@ -336,7 +354,10 @@ defaultTarget = randomPick(aliveEnemies)
 | `MIN_DAMAGE` | 1 | 1 | — | — |
 | `CHAIN_KILL_LIMIT` | 3 | 2-5 | 更长连锁 | 限制连锁 |
 | `ADVISOR_SKILL_USES` | 1 | 1-3 | 更多军师技干预 | 更少干预 |
-| `DEFEAT_GOLD_PENALTY` | 0.2 | 0.1-0.3 | 失败惩罚更重 | 惩罚更轻 |
+| `DEFEAT_GOLD_PENALTY` | — | — | 已移除（普通战斗失败无金币惩罚） | — |
+| `MAX_HONOR` | 100 | 50-200 | 更多容错空间 | 更严格 |
+| `MINI_BOSS_HONOR_COST` | 30-50 | 20-60 | Boss 失败惩罚更重 | 惩罚更轻 |
+| `FINAL_BOSS_HONOR_COST` | 100 | 80-150 | 最终 Boss 一次扣满（需与 MAX_HONOR 同步） | 允许多次挑战 |
 | `POSITIONS_PER_SIDE` | 5 | 4-6 | 更多站位选择 | 更少选择 |
 
 ## Acceptance Criteria
@@ -362,6 +383,6 @@ defaultTarget = randomPick(aliveEnemies)
 | Question | Owner | Deadline | Resolution |
 |----------|-------|----------|-----------|
 | 伤害随机波动(±5%)是否需要保留，还是完全确定性 | Game Designer | Prototype | playtest 后决定 |
-| 失败后"重新挑战"是否消耗额外资源 | Game Designer | Event System GDD | 与事件系统同步 |
+| 失败后"重新挑战"是否消耗额外资源 | Game Designer | Event System GDD | **已解决**：所有节点不允许重试。普通战斗失败无奖励继续前进，Boss 战失败扣荣誉值 |
 | Boss 战扩展位的具体上限 | Game Designer | Prototype | playtest 后决定 |
 | 军师技的冷却/充能机制具体设计 | Game Designer | Advisor Skills GDD | 单独系统 GDD |
