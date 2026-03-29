@@ -174,4 +174,22 @@ export const STATUS_EFFECTS: Record<string, StatusEffect> = {
     value: 8,
     duration: 3,
   },
+  stun: {
+    id: 'stun',
+    name: '眩晕',
+    category: 'debuff',
+    effectType: StatusEffectType.Control,
+    controlType: 'stun',
+    value: 0,
+    duration: 1,
+  },
+  silence: {
+    id: 'silence',
+    name: '沉默',
+    category: 'debuff',
+    effectType: StatusEffectType.Control,
+    controlType: 'silence',
+    value: 0,
+    duration: 2,
+  },
 }

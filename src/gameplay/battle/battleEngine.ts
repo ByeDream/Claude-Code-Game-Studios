@@ -14,9 +14,9 @@
  */
 
 import type { HeroInstance, HeroData, Skill } from '../hero/types'
-import { StatType, ScalingStat, SkillType } from '../hero/types'
+import { StatType, ScalingStat, SkillType, TargetType, Faction, HeroTier, HeroVariant } from '../hero/types'
 import { createHeroInstance } from '../hero/heroFactory'
-import { calculateFinalStat, calculateAllFinalStats } from '../hero/statCalculation'
+import { calculateFinalStat, calculateAllFinalStats, createZeroStats } from '../hero/statCalculation'
 import type { NamelessUnit } from '../enemy/types'
 import { evaluateBonds, applyBondResult } from '../bond/bondManager'
 import type { RandomFn, CooldownMap } from './types'
@@ -120,16 +120,16 @@ function convertEnemies(
  * Only fields used by decideAction and selectTarget are populated.
  */
 function battleUnitToFakeHeroInstance(unit: BattleUnit): HeroInstance {
-  const zeroStats = { [StatType.STR]: 0, [StatType.INT]: 0, [StatType.DEF]: 0, [StatType.HP]: 0, [StatType.SPD]: 0 }
+  const zeroStats = createZeroStats()
   return {
     data: {
       id: unit.id,
       name: unit.name,
       baseName: unit.name,
       title: '',
-      faction: 'Shu' as any,
-      tier: 'A' as any,
-      variant: 'Base' as any,
+      faction: Faction.Shu,
+      tier: HeroTier.A,
+      variant: HeroVariant.Base,
       legendTitle: null,
       baseStats: unit.finalStats,
       statGrowthRates: zeroStats,
@@ -271,7 +271,7 @@ export function executeTurn(
     if (decision.action === ActionType.Skill && decision.skill) {
       // Skill action
       const skill = decision.skill
-      const isHeal = skill.target === 'single_ally' || skill.target === 'all_allies'
+      const isHeal = skill.target === TargetType.SingleAlly || skill.target === TargetType.AllAllies
       const multiplier = skill.effects[0]?.magnitude ?? 1.0
       const isIntBased = skill.scaling === ScalingStat.INT
 

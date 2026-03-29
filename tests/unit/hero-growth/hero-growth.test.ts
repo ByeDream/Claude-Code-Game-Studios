@@ -71,6 +71,11 @@ describe('getLevelUpCost', () => {
     expect(getLevelUpCost(MAX_LEVEL + 1)).toBe(0)
   })
 
+  it('test_growth_costNegativeLevel_returnsZero', () => {
+    expect(getLevelUpCost(-1)).toBe(0)
+    expect(getLevelUpCost(0)).toBe(0)
+  })
+
   it('test_growth_costIsStrictlyIncreasing', () => {
     for (let lv = 3; lv <= MAX_LEVEL; lv++) {
       expect(getLevelUpCost(lv)).toBeGreaterThan(getLevelUpCost(lv - 1))
@@ -263,6 +268,19 @@ describe('levelUp', () => {
     expect(() => levelUp(hero, economy)).toThrow()
   })
 
+  it('test_growth_levelUp_heroNotMutatedOnFailure', () => {
+    // Arrange
+    const hero = createHeroInstance(GUAN_YU, 1)
+    const economy = createEconomy(0, 0)
+    const originalLevel = hero.level
+
+    // Act — should throw
+    try { levelUp(hero, economy) } catch { /* expected */ }
+
+    // Assert — hero state unchanged
+    expect(hero.level).toBe(originalLevel)
+  })
+
   it('test_growth_levelUp_goldUnchanged', () => {
     const hero = createHeroInstance(GUAN_YU, 1)
     const economy = createEconomy(50, 100)
@@ -364,6 +382,13 @@ describe('getScaledSkillValue', () => {
 
   it('test_growth_skill_zeroBase_remainsZero', () => {
     expect(getScaledSkillValue(0, 10)).toBe(0)
+  })
+
+  it('test_growth_skill_lv0_returnsLessThanBase', () => {
+    // level 0 is below minimum but formula should not crash
+    const scaled = getScaledSkillValue(1.0, 0)
+    // 1.0 * (1 + (-1) * 0.08) = 0.92
+    expect(scaled).toBeCloseTo(0.92)
   })
 
 })

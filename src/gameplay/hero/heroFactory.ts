@@ -2,47 +2,17 @@
  * Hero System — Hero Instance Factory
  *
  * Creates runtime `HeroInstance` objects from static `HeroData` config records.
- * Handles growth-bonus calculation so all downstream systems receive a fully
- * initialised instance with correct starting state.
+ * Delegates growth-bonus calculation to the Hero Growth system so all downstream
+ * systems receive a fully initialised instance with correct starting state.
  *
  * @module src/gameplay/hero/heroFactory
  * @see design/gdd/hero-system.md — Hero Data Model, Formulas
  */
 
-import type { HeroData, HeroInstance, BaseStats } from './types'
+import type { HeroData, HeroInstance } from './types'
 import { StatType } from './types'
 import { createZeroStats, calculateFinalStat } from './statCalculation'
-
-// ---------------------------------------------------------------------------
-// Internal helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Computes the growth bonus for every stat at the given level.
- *
- * Formula:
- *   growthBonus[stat] = floor(baseStats[stat] * statGrowthRates[stat] * (level - 1))
- *
- * At level 1 all bonuses are 0 (no growth yet applied).
- *
- * @param data  - Hero's static data containing baseStats and statGrowthRates.
- * @param level - Target level (must be ≥ 1).
- * @returns A BaseStats record with the growth bonus for each stat.
- */
-function computeGrowthBonus(data: HeroData, level: number): BaseStats {
-  const levelsGained = level - 1
-  if (levelsGained <= 0) {
-    return createZeroStats()
-  }
-
-  const bonus = createZeroStats()
-  for (const stat of Object.values(StatType)) {
-    bonus[stat] = Math.floor(
-      data.baseStats[stat] * data.statGrowthRates[stat] * levelsGained
-    )
-  }
-  return bonus
-}
+import { computeGrowthBonus } from '../hero-growth/growthManager'
 
 // ---------------------------------------------------------------------------
 // Public factory
@@ -54,9 +24,10 @@ function computeGrowthBonus(data: HeroData, level: number): BaseStats {
  * Initialisation contract:
  * - `level`           set to the provided level (default 1)
  * - `growthBonus`     calculated from `data.statGrowthRates` and `level`
+ *                     (includes LEGEND_GROWTH_MULTIPLIER for Legend variants)
  * - `equipBonus`      zeroed — no items equipped yet
- * - `bondModifier`    0 — bond system will write this during roster evaluation
- * - `statusModifier`  0 — status system will write this during battle
+ * - `bondModifier`    zeroed — bond system will write this during roster evaluation
+ * - `statusModifier`  zeroed — status system will write this during battle
  * - `currentHP`       set to the hero's max HP (final HP stat at creation)
  * - `equippedItemIds` empty array
  * - `activeStatusIds` empty array

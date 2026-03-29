@@ -208,21 +208,21 @@ const scenario4: SimConfig = {
   trials: TRIALS,
 }
 
-// Scenario 5: Shu-bond team (3 Shu heroes) vs no-bond mixed team
-const shuTeam = [GUAN_YU, ZHANG_FEI, CAO_CAO, ZHOU_YU, LV_BU] // 2 Shu = Shu bond
-const mixedTeam = [CAO_CAO, ZHOU_YU, LV_BU, GUAN_YU, ZHANG_FEI] // same heroes, different order (bonds depend on Shu count)
+// Scenario 5: Bond-active team (3 Shu: GY, ZF, CC) vs non-bond mixed team (no faction pair)
+const bondTeam = [GUAN_YU, ZHANG_FEI, CAO_CAO, ZHOU_YU, LV_BU] // 2 Shu = Shu bond
+const noBondTeam = [CAO_CAO, ZHOU_YU, LV_BU] // 3 heroes from 3 factions = no faction bond
 
 const scenario5a: SimConfig = {
-  name: 'Bond Test: Shu-first (2 Shu) vs Early',
-  playerHeroes: shuTeam,
+  name: 'Bond Test: With Shu Bond (5 heroes) vs Early',
+  playerHeroes: bondTeam,
   playerLevel: 1,
   enemies: TEST_NAMELESS_NODE0,
   trials: TRIALS,
 }
 
 const scenario5b: SimConfig = {
-  name: 'Bond Test: Mixed-first vs Early (same heroes)',
-  playerHeroes: mixedTeam,
+  name: 'Bond Test: No Bond (3 heroes) vs Early',
+  playerHeroes: noBondTeam,
   playerLevel: 1,
   enemies: TEST_NAMELESS_NODE0,
   trials: TRIALS,
@@ -283,10 +283,10 @@ for (const s of scenarios) {
 console.log('\n' + '='.repeat(60))
 console.log('  BOND COMPARISON')
 console.log('='.repeat(60))
-const bondA = allResults.find(r => r.name.includes('Shu-first'))!
-const bondB = allResults.find(r => r.name.includes('Mixed-first'))!
-console.log(`  Shu-first win rate:    ${formatPercent(bondA.winRate)}`)
-console.log(`  Mixed-first win rate:  ${formatPercent(bondB.winRate)}`)
+const bondA = allResults.find(r => r.name.includes('With Shu Bond'))!
+const bondB = allResults.find(r => r.name.includes('No Bond'))!
+console.log(`  With Shu Bond win rate: ${formatPercent(bondA.winRate)}  (${bondA.wins}/${bondA.trials})`)
+console.log(`  No Bond win rate:      ${formatPercent(bondB.winRate)}  (${bondB.wins}/${bondB.trials})`)
 console.log(`  Delta:                 ${formatPercent(bondA.winRate - bondB.winRate)}`)
 
 // ---------------------------------------------------------------------------
@@ -314,8 +314,8 @@ console.log('='.repeat(60))
 const checks: Array<[string, boolean, string]> = [
   [
     'Full roster vs early: win rate > 50%',
-    allResults[1].winRate > 0.5,
-    `${formatPercent(allResults[1].winRate)}`,
+    allResults.find(r => r.name.includes('Full Roster (Lv1)'))!.winRate > 0.5,
+    `${formatPercent(allResults.find(r => r.name.includes('Full Roster (Lv1)'))!.winRate)}`,
   ],
   [
     'Lv5 team beats early more than Lv1',

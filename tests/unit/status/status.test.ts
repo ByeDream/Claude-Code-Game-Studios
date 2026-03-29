@@ -24,7 +24,9 @@ import {
   STATUS_MODIFIER_MIN,
   STATUS_MODIFIER_MAX,
   BOSS_DEBUFF_REDUCTION,
+  BOSS_CONTROL_REDUCTION,
   BURN_HEAL_REDUCTION,
+  TENACITY_REDUCTION,
   STATUS_EFFECTS,
 } from '../../../src/gameplay/status/statusConfig'
 
@@ -218,6 +220,72 @@ describe('applyStatus — boss resistance', () => {
     expect(statuses[0].effect.value).toBe(5)
   })
 
+  it('test_status_boss_controlDurationReduced', () => {
+    // Arrange — stun with duration 4 on boss
+    const stun = { ...STATUS_EFFECTS['stun'], duration: 4 }
+
+    // Act
+    const [statuses, result] = applyStatus([], stun, 'hero_a', true)
+
+    // Assert — duration halved: floor(4 * 0.5) = 2
+    expect(result).toBe('reduced_by_boss')
+    expect(statuses[0].remainingDuration).toBe(Math.max(1, Math.floor(4 * BOSS_CONTROL_REDUCTION)))
+  })
+
+  it('test_status_boss_controlDurationMinimum1', () => {
+    // Arrange — stun with duration 1 on boss
+    const stun = { ...STATUS_EFFECTS['stun'], duration: 1 }
+
+    // Act
+    const [statuses] = applyStatus([], stun, 'hero_a', true)
+
+    // Assert — minimum 1 round even after reduction
+    expect(statuses[0].remainingDuration).toBe(1)
+  })
+
+})
+
+// ===========================================================================
+// applyStatus — S+ tier tenacity
+// ===========================================================================
+
+describe('applyStatus — tenacity', () => {
+
+  it('test_status_tenacity_controlDurationReduced', () => {
+    // Arrange — stun with duration 4 on S+ tier hero
+    const stun = { ...STATUS_EFFECTS['stun'], duration: 4 }
+
+    // Act
+    const [statuses, result] = applyStatus([], stun, 'hero_a', false, true)
+
+    // Assert — duration halved: floor(4 * 0.5) = 2
+    expect(result).toBe('applied')
+    expect(statuses[0].remainingDuration).toBe(Math.max(1, Math.floor(4 * TENACITY_REDUCTION)))
+  })
+
+  it('test_status_tenacity_controlDurationMinimum1', () => {
+    // Arrange — stun with duration 1 on S+ hero
+    const stun = { ...STATUS_EFFECTS['stun'], duration: 1 }
+
+    // Act
+    const [statuses] = applyStatus([], stun, 'hero_a', false, true)
+
+    // Assert — minimum 1
+    expect(statuses[0].remainingDuration).toBe(1)
+  })
+
+  it('test_status_tenacity_doesNotAffectStatModify', () => {
+    // Arrange — debuff on S+ tier hero
+    const effect = STATUS_EFFECTS['atk_down']
+
+    // Act
+    const [statuses] = applyStatus([], effect, 'hero_a', false, true)
+
+    // Assert — value unchanged, tenacity only affects control
+    expect(statuses[0].effect.value).toBe(effect.value)
+    expect(statuses[0].remainingDuration).toBe(effect.duration)
+  })
+
 })
 
 // ===========================================================================
@@ -305,6 +373,17 @@ describe('tickStatuses — duration', () => {
     expect(remaining).toHaveLength(1)
     expect(remaining[0].effect.id).toBe('def_up')
     expect(result.expired).toEqual(['atk_up'])
+  })
+
+  it('test_status_tick_emptyStatuses_noDamageNoHealing', () => {
+    // Arrange & Act
+    const [remaining, result] = tickStatuses([], 100, 100)
+
+    // Assert
+    expect(remaining).toHaveLength(0)
+    expect(result.damage).toBe(0)
+    expect(result.healing).toBe(0)
+    expect(result.expired).toEqual([])
   })
 
 })
@@ -546,16 +625,7 @@ describe('isControlled', () => {
 
   it('test_status_control_stunned_whenStunActive', () => {
     // Arrange
-    const stun: StatusEffect = {
-      id: 'stun',
-      name: '眩晕',
-      category: 'debuff',
-      effectType: StatusEffectType.Control,
-      controlType: 'stun',
-      value: 0,
-      duration: 1,
-    }
-    const statuses = [makeApplied(stun, 1)]
+    const statuses = [makeApplied(STATUS_EFFECTS['stun'], 1)]
 
     // Assert
     expect(isControlled(statuses)).toBe('stunned')
@@ -563,16 +633,7 @@ describe('isControlled', () => {
 
   it('test_status_control_silenced_whenSilenceActive', () => {
     // Arrange
-    const silence: StatusEffect = {
-      id: 'silence',
-      name: '沉默',
-      category: 'debuff',
-      effectType: StatusEffectType.Control,
-      controlType: 'silence',
-      value: 0,
-      duration: 2,
-    }
-    const statuses = [makeApplied(silence, 2)]
+    const statuses = [makeApplied(STATUS_EFFECTS['silence'], 2)]
 
     // Assert
     expect(isControlled(statuses)).toBe('silenced')
@@ -580,25 +641,7 @@ describe('isControlled', () => {
 
   it('test_status_control_stunPriority_whenBothStunAndSilence', () => {
     // Arrange — stun takes priority per GDD
-    const stun: StatusEffect = {
-      id: 'stun',
-      name: '眩晕',
-      category: 'debuff',
-      effectType: StatusEffectType.Control,
-      controlType: 'stun',
-      value: 0,
-      duration: 1,
-    }
-    const silence: StatusEffect = {
-      id: 'silence',
-      name: '沉默',
-      category: 'debuff',
-      effectType: StatusEffectType.Control,
-      controlType: 'silence',
-      value: 0,
-      duration: 2,
-    }
-    const statuses = [makeApplied(silence, 2), makeApplied(stun, 1)]
+    const statuses = [makeApplied(STATUS_EFFECTS['silence'], 2), makeApplied(STATUS_EFFECTS['stun'], 1)]
 
     // Assert — stun takes priority
     expect(isControlled(statuses)).toBe('stunned')
@@ -629,13 +672,14 @@ describe('clearAllStatuses', () => {
 
 describe('Status config', () => {
 
-  it('test_status_config_mvpEffectsAre9', () => {
-    expect(Object.keys(STATUS_EFFECTS)).toHaveLength(9)
+  it('test_status_config_mvpEffectsAre11', () => {
+    // 9 base + stun + silence = 11
+    expect(Object.keys(STATUS_EFFECTS)).toHaveLength(11)
   })
 
-  it('test_status_config_allEffectsHavePositiveValue', () => {
+  it('test_status_config_allEffectsHaveNonNegativeValue', () => {
     for (const effect of Object.values(STATUS_EFFECTS)) {
-      expect(effect.value).toBeGreaterThan(0)
+      expect(effect.value).toBeGreaterThanOrEqual(0)
     }
   })
 
