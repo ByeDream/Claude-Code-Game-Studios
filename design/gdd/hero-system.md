@@ -1,6 +1,6 @@
 # Hero System (武将系统)
 
-> **Status**: In Design
+> **Status**: Designed
 > **Author**: User + Claude
 > **Last Updated**: 2026-03-29
 > **Implements Pillar**: 收集之乐, 养成爆发, 构筑智慧, 历史沉浸

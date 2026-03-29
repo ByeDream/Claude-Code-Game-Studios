@@ -164,8 +164,8 @@ Effort estimates: S = 1 session, M = 2-3 sessions, L = 4+ sessions.
 |--------|-------|
 | Total systems identified | 21 |
 | Design docs started | 13 |
-| Design docs reviewed | 0 |
-| Design docs approved | 0 |
+| Design docs reviewed | 13 |
+| Design docs approved | 13 |
 | MVP systems designed | 13/13 |
 | Vertical Slice systems designed | 0/5 |
 | Alpha systems designed | 0/3 |
