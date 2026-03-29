@@ -78,7 +78,7 @@ export function createHeroInstance(data: HeroData, level: number = 1): HeroInsta
     currentHP:       0, // placeholder; overwritten below
     growthBonus,
     equipBonus,
-    bondModifier:    0,
+    bondModifier:    createZeroStats(),
     statusModifier:  0,
     equippedItemIds: [],
     activeStatusIds: [],

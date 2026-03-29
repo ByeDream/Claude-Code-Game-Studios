@@ -310,10 +310,14 @@ export interface HeroInstance {
   equipBonus: BaseStats
 
   /**
-   * Multiplicative bond modifier (percentage as decimal, e.g., 0.10 = +10%).
-   * Written by the Bond System. Initialized to 0.
+   * Per-stat multiplicative bond modifier (percentage as decimal, e.g., 0.10 = +10%).
+   * Written by the Bond System. Initialized to all-zero.
+   * Each stat receives its own modifier — e.g., Shu faction gives STR+10%, HP+8%.
+   * Capped per stat at BOND_MODIFIER_CAP (0.25).
+   *
+   * @see design/gdd/bond-system.md — Bond Modifier Calculation
    */
-  bondModifier: number
+  bondModifier: BaseStats
 
   /**
    * Multiplicative status modifier (percentage as decimal, e.g., -0.20 = −20%).

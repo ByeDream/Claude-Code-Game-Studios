@@ -76,7 +76,9 @@ describe('createHeroInstance', () => {
     const instance = createHeroInstance(GUAN_YU, 1)
 
     // Assert
-    expect(instance.bondModifier).toBe(0)
+    for (const stat of Object.values(StatType)) {
+      expect(instance.bondModifier[stat]).toBe(0)
+    }
     expect(instance.statusModifier).toBe(0)
   })
 
@@ -182,7 +184,7 @@ describe('calculateFinalStat', () => {
   it('test_statCalc_withBondModifier_multipliesTotalAdditive', () => {
     // Arrange
     const instance = createHeroInstance(GUAN_YU, 1)
-    instance.bondModifier = 0.10  // +10% from bond system
+    instance.bondModifier[StatType.STR] = 0.10  // +10% STR from bond system
 
     // Act
     const finalSTR = calculateFinalStat(instance, StatType.STR)
@@ -207,8 +209,8 @@ describe('calculateFinalStat', () => {
     // Arrange — verifies every term in the GDD formula
     const instance = createHeroInstance(GUAN_YU, 5)
     instance.equipBonus[StatType.DEF]  = 15
-    instance.bondModifier              = 0.15
-    instance.statusModifier            = 0.05
+    instance.bondModifier[StatType.DEF] = 0.15
+    instance.statusModifier             = 0.05
 
     // growthBonus[DEF] = floor(28 * 0.06 * 4) = floor(6.72) = 6
     // finalDEF = (28 + 6 + 15) * (1 + 0.15 + 0.05)
@@ -485,12 +487,12 @@ describe('HeroInstance contract', () => {
     // Arrange
     const instance = createHeroInstance(GUAN_YU, 1)
 
-    // Act — simulate a +25% bond modifier (max bond per GDD)
-    instance.bondModifier = 0.25
+    // Act — simulate a +25% bond modifier on STR (max bond per GDD)
+    instance.bondModifier[StatType.STR] = 0.25
     const withBond = calculateFinalStat(instance, StatType.STR)
 
     // Reset bond, apply status buff
-    instance.bondModifier   = 0
+    instance.bondModifier[StatType.STR] = 0
     instance.statusModifier = 0.25
     const withStatus = calculateFinalStat(instance, StatType.STR)
 
