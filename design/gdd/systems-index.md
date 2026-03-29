@@ -29,10 +29,10 @@
 | 6 | Enemy System (敌军系统) | Gameplay | MVP | Designed | design/gdd/enemy-system.md | Hero System |
 | 7 | Battle AI (战斗AI) | Gameplay | MVP | Designed | design/gdd/battle-ai.md | Hero System |
 | 8 | Battle Engine (战斗系统) | Gameplay | MVP | Designed | design/gdd/battle-engine.md | Hero System, Bond System, Battle AI, Enemy System, Equipment |
-| 9 | Loot/Rewards (战利品系统) | Economy | MVP | Not Started | — | Hero System, Equipment, Economy |
-| 10 | Event System (事件系统) | Gameplay | MVP | Not Started | — | Hero System, Battle Engine, Loot/Rewards, Hero Growth |
-| 11 | Run Map (Run地图系统) | Gameplay | MVP | Not Started | — | Event System |
-| 12 | Battle UI (战斗UI) | UI | MVP | Not Started | — | Battle Engine |
+| 9 | Loot/Rewards (战利品系统) | Economy | MVP | Designed | design/gdd/loot-rewards.md | Hero System, Equipment, Economy |
+| 10 | Event System (事件系统) | Gameplay | MVP | Designed | design/gdd/event-system.md | Hero System, Battle Engine, Loot/Rewards, Hero Growth |
+| 11 | Run Map (Run地图系统) | Gameplay | MVP | Designed | design/gdd/run-map.md | Event System |
+| 12 | Battle UI (战斗UI) | UI | MVP | Designed | design/gdd/battle-ui.md | Battle Engine |
 | 13 | Advisor Skills (军师技系统) | Gameplay | Vertical Slice | Not Started | — | Battle Engine |
 | 14 | Shop (商店系统) | Economy | Vertical Slice | Not Started | — | Equipment, Economy |
 | 15 | Campaign System (历史剧本系统) | Narrative | Vertical Slice | Not Started | — | Run Map, Event System, Enemy System |
@@ -41,7 +41,7 @@
 | 18 | Monarch System (君主系统) | Gameplay | Alpha | Not Started | — | Hero System, Advisor Skills |
 | 19 | Meta Progression (跨Run进度系统) | Progression | Alpha | Not Started | — | Campaign System, Hero System |
 | 20 | Save/Load (存档系统) | Persistence | Alpha | Not Started | — | All game state systems |
-| 21 | Status System (状态系统) | Gameplay | MVP | Not Started | — | Hero System, Battle Engine |
+| 21 | Status System (状态系统) | Gameplay | MVP | Designed | design/gdd/status-system.md | Hero System, Battle Engine |
 
 ---
 
@@ -163,10 +163,10 @@ Effort estimates: S = 1 session, M = 2-3 sessions, L = 4+ sessions.
 | Metric | Count |
 |--------|-------|
 | Total systems identified | 21 |
-| Design docs started | 8 |
+| Design docs started | 13 |
 | Design docs reviewed | 0 |
 | Design docs approved | 0 |
-| MVP systems designed | 8/13 |
+| MVP systems designed | 13/13 |
 | Vertical Slice systems designed | 0/5 |
 | Alpha systems designed | 0/3 |
 
