@@ -255,7 +255,7 @@ finalStat = (baseStat + growthBonus + equipBonus) * (1 + bondModifier + statusMo
 | **Battle AI** | 读取 Hero | 读取武将技能、目标类型、属性，决定自动行为 |
 | **Enemy System** | 共享模型 | 敌方武将复用 Hero 数据模型（可能有特殊敌人专属字段） |
 | **Event System** | 触发 → Hero | 事件产出新武将实例（招募/历史事件） |
-| **Loot System** | 触发 → Hero | 战利品可能包含武将卡 |
+| **Battle Engine (Boss Drop)** | 触发 → Hero | Boss 战额外掉落可产出 S+ 武将（独立于宝箱） |
 | **Status System** | 修改 Hero (runtime) | 战斗中施加/移除状态效果，影响 `statusModifier` |
 | **Campaign System** | 约束 Hero | 剧本决定哪些武将在当前 run 的可获取池中 |
 | **Monarch System** | 提供初始 | 君主决定起始武将阵容 |

@@ -297,7 +297,7 @@ actualDuration = target.tier >= S ? max(1, floor(baseDuration * TENACITY_REDUCTI
 | Battle AI | AI reads Status | 决策参考目标状态 | Soft |
 | Battle UI | UI reads Status | 显示状态图标和效果 | Hard |
 | Equipment System | Equipment triggers Status | 装备效果施加状态 | Soft |
-| Bond System | Bond triggers Status | 羁绊效果施加 buff | Soft |
+| Bond System | Bond triggers Status | 条件性羁绊效果（如"白帝托孤"阵亡触发）通过 Status 施加；主流羁绊加成通过 bondModifier 直接写入 Hero System，不经过 Status | Soft |
 
 ## Tuning Knobs
 
