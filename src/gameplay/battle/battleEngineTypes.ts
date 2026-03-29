@@ -10,6 +10,7 @@
  */
 
 import type { BaseStats, Skill } from '../hero/types'
+import type { AppliedStatus } from '../status/types'
 
 // ---------------------------------------------------------------------------
 // BattleUnit — unified combatant abstraction
@@ -45,6 +46,13 @@ export interface BattleUnit {
   skills: Skill[]
   /** Tags for AI behavior hints (e.g., '武力型', '谋略型'). */
   tags: string[]
+
+  /** Active status effects on this unit. Managed by status integration in executeTurn(). */
+  activeStatuses: AppliedStatus[]
+  /** Whether this unit is a boss (affects status resistance). */
+  isBoss: boolean
+  /** Whether this unit is S+ tier (affects control tenacity). */
+  isHighTier: boolean
 }
 
 // ---------------------------------------------------------------------------
@@ -64,6 +72,11 @@ export enum BattleEventType {
   Death = 'death',
   RoundEnd = 'round_end',
   BattleEnd = 'battle_end',
+  StatusApplied = 'status_applied',
+  StatusTick = 'status_tick',
+  StatusExpired = 'status_expired',
+  Stunned = 'stunned',
+  Silenced = 'silenced',
 }
 
 /**
@@ -84,6 +97,8 @@ export interface BattleEvent {
   isCrit?: boolean
   /** Skill name if a skill was used. */
   skillName?: string
+  /** Status effect ID (for status events). */
+  statusId?: string
   /** Additional info text. */
   message?: string
 }

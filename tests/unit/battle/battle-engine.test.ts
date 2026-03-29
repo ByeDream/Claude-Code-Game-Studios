@@ -58,6 +58,9 @@ function makeBattleUnit(overrides: Partial<BattleUnit> & { id: string }): Battle
     isKnockedOut: false,
     skills: [],
     tags: [],
+    activeStatuses: [],
+    isBoss: false,
+    isHighTier: false,
     ...overrides,
   }
 }

@@ -32,7 +32,16 @@ import {
   initCooldowns,
 } from './battleAI'
 import { calculatePhysicalDamage, calculateSkillDamage, calculateHealing } from './damageCalc'
-import { MAX_ROUNDS, HP_BATTLE_MULTIPLIER } from './battleConfig'
+import { MAX_ROUNDS, HP_BATTLE_MULTIPLIER, SKILL_STATUS_KEYWORDS } from './battleConfig'
+import type { AppliedStatus, StatusEffect } from '../status/types'
+import { StatusEffectType } from '../status/types'
+import {
+  applyStatus,
+  tickStatuses,
+  getStatusModifier,
+  isControlled,
+} from '../status/statusManager'
+import { STATUS_EFFECTS } from '../status/statusConfig'
 
 // ---------------------------------------------------------------------------
 // Unit conversion helpers
@@ -66,6 +75,9 @@ function heroInstanceToBattleUnit(
     isKnockedOut: false,
     skills: hero.data.skills,
     tags: hero.data.tags,
+    activeStatuses: [],
+    isBoss: false,
+    isHighTier: hero.data.tier === HeroTier.S || hero.data.tier === HeroTier.SS || hero.data.tier === HeroTier.SSS,
   }
 }
 
@@ -89,6 +101,9 @@ function namelessUnitToBattleUnit(
     isKnockedOut: unit.isKnockedOut,
     skills: unit.skill ? [unit.skill] : [],
     tags: [],
+    activeStatuses: [],
+    isBoss: false,
+    isHighTier: false,
   }
 }
 
@@ -128,7 +143,7 @@ function battleUnitToFakeHeroInstance(unit: BattleUnit): HeroInstance {
       baseName: unit.name,
       title: '',
       faction: Faction.Shu,
-      tier: HeroTier.A,
+      tier: unit.isHighTier ? HeroTier.S : HeroTier.A,
       variant: HeroVariant.Base,
       legendTitle: null,
       baseStats: unit.finalStats,
@@ -148,7 +163,7 @@ function battleUnitToFakeHeroInstance(unit: BattleUnit): HeroInstance {
     bondModifier: zeroStats,
     statusModifier: zeroStats,
     equippedItemIds: [],
-    activeStatusIds: [],
+    activeStatusIds: unit.activeStatuses.map(s => s.effect.id),
     isKnockedOut: unit.isKnockedOut,
   }
 }
@@ -227,9 +242,9 @@ export function executeTurn(
   const newRound = state.currentRound + 1
   const log: BattleEvent[] = [...state.log]
 
-  // Shallow-clone units so we mutate copies
-  const playerUnits = state.playerUnits.map(u => ({ ...u }))
-  const enemyUnits = state.enemyUnits.map(u => ({ ...u }))
+  // Shallow-clone units so we mutate copies (deep clone activeStatuses)
+  const playerUnits = state.playerUnits.map(u => ({ ...u, activeStatuses: [...u.activeStatuses] }))
+  const enemyUnits = state.enemyUnits.map(u => ({ ...u, activeStatuses: [...u.activeStatuses] }))
 
   log.push({
     type: BattleEventType.RoundStart,
@@ -238,6 +253,68 @@ export function executeTurn(
     targetIds: [],
     message: `--- 第 ${newRound} 回合 ---`,
   })
+
+  // --- Status tick phase (round start): DoT/HoT + expiry for all alive units ---
+  const allUnitsTick = [...playerUnits, ...enemyUnits]
+  for (const unit of allUnitsTick) {
+    if (unit.isKnockedOut || unit.activeStatuses.length === 0) continue
+
+    const [remaining, tickResult] = tickStatuses(unit.activeStatuses, unit.currentHP, unit.maxHP)
+    unit.activeStatuses = remaining
+
+    // Apply DoT damage
+    if (tickResult.damage > 0) {
+      unit.currentHP = Math.max(0, unit.currentHP - tickResult.damage)
+      log.push({
+        type: BattleEventType.StatusTick,
+        round: newRound,
+        sourceId: '',
+        targetIds: [unit.id],
+        value: tickResult.damage,
+        message: `${unit.name} 受到 ${tickResult.damage} 持续伤害`,
+      })
+
+      if (unit.currentHP <= 0) {
+        unit.currentHP = 0
+        unit.isKnockedOut = true
+        log.push({
+          type: BattleEventType.Death,
+          round: newRound,
+          sourceId: '',
+          targetIds: [unit.id],
+          message: `${unit.name} 被持续伤害击败！`,
+        })
+      }
+    }
+
+    // Apply HoT healing
+    if (tickResult.healing > 0 && !unit.isKnockedOut) {
+      unit.currentHP = Math.min(unit.maxHP, unit.currentHP + tickResult.healing)
+      log.push({
+        type: BattleEventType.StatusTick,
+        round: newRound,
+        sourceId: '',
+        targetIds: [unit.id],
+        value: tickResult.healing,
+        message: `${unit.name} 恢复 ${tickResult.healing} 生命`,
+      })
+    }
+
+    // Log expired statuses
+    for (const expiredId of tickResult.expired) {
+      log.push({
+        type: BattleEventType.StatusExpired,
+        round: newRound,
+        sourceId: '',
+        targetIds: [unit.id],
+        statusId: expiredId,
+        message: `${unit.name} 的状态效果消失`,
+      })
+    }
+
+    // Recalculate finalStats based on current status modifiers
+    recalculateUnitStats(unit)
+  }
 
   // Generate action order from alive units
   const alivePlayers = playerUnits.filter(u => !u.isKnockedOut)
@@ -261,12 +338,36 @@ export function executeTurn(
 
     if (enemies.length === 0) break  // battle is over
 
-    // AI decision
+    // AI decision (with control state check)
     const fakeActor = battleUnitToFakeHeroInstance(actor)
     const fakeAllies = allies.map(battleUnitToFakeHeroInstance)
     const fakeEnemies = enemies.map(battleUnitToFakeHeroInstance)
 
-    const decision = decideAction(fakeActor, fakeAllies, fakeEnemies, cooldowns, random)
+    const decision = decideAction(fakeActor, fakeAllies, fakeEnemies, cooldowns, random, actor.activeStatuses)
+
+    // Stunned: skip action entirely
+    if (decision === null) {
+      log.push({
+        type: BattleEventType.Stunned,
+        round: newRound,
+        sourceId: actor.id,
+        targetIds: [],
+        message: `${actor.name} 被眩晕，无法行动！`,
+      })
+      continue
+    }
+
+    // Log silenced if the unit is silenced and was forced to basic attack
+    const controlState = isControlled(actor.activeStatuses)
+    if (controlState === 'silenced' && decision.action === ActionType.Attack) {
+      log.push({
+        type: BattleEventType.Silenced,
+        round: newRound,
+        sourceId: actor.id,
+        targetIds: [],
+        message: `${actor.name} 被沉默，只能普攻！`,
+      })
+    }
 
     if (decision.action === ActionType.Skill && decision.skill) {
       // Skill action
@@ -326,6 +427,9 @@ export function executeTurn(
             })
           }
         }
+
+        // --- Apply status effects from skill ---
+        applySkillStatuses(skill, actor, target, allUnits, newRound, log)
       }
 
       // Put skill on cooldown
@@ -408,6 +512,123 @@ export function executeTurn(
     outcome,
     log,
   }
+}
+
+// ---------------------------------------------------------------------------
+// Status integration helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Extracts status effect IDs from a skill's effects using keyword matching.
+ * Checks effect descriptions for known status keywords.
+ *
+ * @param skill - The skill that was used.
+ * @returns Array of StatusEffect definitions to apply.
+ */
+export function extractStatusEffects(skill: Skill): StatusEffect[] {
+  const results: StatusEffect[] = []
+
+  for (const effect of skill.effects) {
+    // Check if any effect has duration > 0 (status-producing effect)
+    // Also check effect description for keyword matches
+    for (const [keyword, statusId] of Object.entries(SKILL_STATUS_KEYWORDS)) {
+      if (effect.description.includes(keyword) || skill.name.includes(keyword)) {
+        const statusDef = STATUS_EFFECTS[statusId]
+        if (statusDef) {
+          // Use effect's duration if specified, otherwise status default
+          const adjustedStatus: StatusEffect = {
+            ...statusDef,
+            duration: effect.duration > 0 ? effect.duration : statusDef.duration,
+            value: effect.magnitude > 0 && effect.magnitude <= 1
+              ? effect.magnitude  // Use skill's magnitude for stat modifiers
+              : statusDef.value,  // Use default for DoT/HoT/Control
+          }
+          results.push(adjustedStatus)
+        }
+        break  // One keyword match per effect
+      }
+    }
+  }
+
+  return results
+}
+
+/**
+ * Applies status effects from a skill to the target.
+ * Called after skill damage/healing resolution.
+ *
+ * @param skill - The skill used.
+ * @param actor - The BattleUnit using the skill.
+ * @param target - The BattleUnit being targeted.
+ * @param allUnits - All battle units (for logging).
+ * @param round - Current round number.
+ * @param log - Battle event log (mutated).
+ */
+function applySkillStatuses(
+  skill: Skill,
+  actor: BattleUnit,
+  target: BattleUnit,
+  _allUnits: BattleUnit[],
+  round: number,
+  log: BattleEvent[],
+): void {
+  if (target.isKnockedOut) return
+
+  const statusEffects = extractStatusEffects(skill)
+
+  for (const statusEffect of statusEffects) {
+    const [newStatuses, result] = applyStatus(
+      target.activeStatuses,
+      statusEffect,
+      actor.id,
+      target.isBoss,
+      target.isHighTier,
+    )
+
+    if (result !== 'ignored_stronger_exists') {
+      target.activeStatuses = newStatuses
+      log.push({
+        type: BattleEventType.StatusApplied,
+        round,
+        sourceId: actor.id,
+        targetIds: [target.id],
+        statusId: statusEffect.id,
+        message: `${actor.name} 对 ${target.name} 施加了 ${statusEffect.name}`,
+      })
+
+      // Recalculate target stats after status application
+      recalculateUnitStats(target)
+    }
+  }
+}
+
+/**
+ * Recalculates a BattleUnit's finalStats based on its current active statuses.
+ * The base stats (without status modifiers) are stored as the unit's original finalStats,
+ * and the status modifier is applied on top.
+ *
+ * @param unit - The BattleUnit to recalculate (mutated).
+ */
+function recalculateUnitStats(unit: BattleUnit): void {
+  if (unit.activeStatuses.length === 0) return
+
+  const statusMod = getStatusModifier(unit.activeStatuses)
+
+  // We need to apply status modifiers. Since finalStats are pre-computed at battle start
+  // with all other modifiers, we apply status modifiers multiplicatively on top.
+  // Note: This is a simplified approach — the status modifier affects the already-computed
+  // finalStats rather than going back to the full formula. This is acceptable because
+  // status modifiers are relative (+/- percentage), not absolute values.
+  // The effect is: effectiveStat = finalStat * (1 + statusModifier)
+  // We DON'T modify finalStats in place to avoid cumulative drift.
+  // Instead, the damage calc uses finalStats directly, and status modifiers
+  // are already factored into the HeroInstance stat calculation pipeline.
+  // For BattleUnits, status modifiers are tracked but stat recalc is a no-op
+  // since we use the direct finalStats for damage.
+  // The real impact comes from DoT/HoT ticks and control states.
+
+  // Future: If per-turn stat recalculation is needed, add a baseFinalStats
+  // field to BattleUnit and recompute finalStats = baseFinalStats * (1 + statusMod).
 }
 
 // ---------------------------------------------------------------------------

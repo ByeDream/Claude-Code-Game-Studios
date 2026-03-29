@@ -128,3 +128,31 @@ export const ADVISOR_SKILL_USES = 1
  * GDD rationale: first few turns should be normal attacks to build tension.
  */
 export const INITIAL_SKILL_COOLDOWN = 2
+
+// ---------------------------------------------------------------------------
+// Skill-to-Status Mapping
+// ---------------------------------------------------------------------------
+
+/**
+ * Maps skill effect descriptions (keywords) to status effect IDs.
+ * When a skill fires, the battle engine checks if its effects contain
+ * status-related keywords and applies the corresponding status to targets.
+ *
+ * This is a data-driven approach: skill definitions don't hardcode status IDs,
+ * and new status effects can be added by extending this mapping.
+ *
+ * @see design/gdd/status-system.md — Status Effect Categories
+ */
+export const SKILL_STATUS_KEYWORDS: Record<string, string> = {
+  '增攻': 'atk_up',
+  '减攻': 'atk_down',
+  '增防': 'def_up',
+  '减防': 'def_down',
+  '加速': 'spd_up',
+  '减速': 'spd_down',
+  '中毒': 'poison',
+  '燃烧': 'burn',
+  '回复': 'regen',
+  '眩晕': 'stun',
+  '沉默': 'silence',
+}

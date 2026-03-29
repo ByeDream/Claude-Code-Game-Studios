@@ -16,6 +16,8 @@
 import type { HeroInstance, Skill } from '../hero/types'
 import { TargetType, StatType, SkillType } from '../hero/types'
 import { calculateFinalStat } from '../hero/statCalculation'
+import { isControlled as queryControlState } from '../status/statusManager'
+import type { AppliedStatus } from '../status/types'
 import type { AIDecision, ActionOrderEntry, CooldownMap, RandomFn } from './types'
 import { TargetStrategy, SkillCategory, ActionType } from './types'
 import { HEAL_THRESHOLD, SKILL_PRIORITY_OVER_ATTACK, INITIAL_SKILL_COOLDOWN } from './battleConfig'
@@ -233,8 +235,10 @@ export function tickCooldowns(cooldowns: CooldownMap): void {
  * Determines the best action for a hero to take this turn.
  *
  * Decision priority (from GDD):
- * 1. If an active skill is ready → use skill (priority: heal > control > damage)
- * 2. Otherwise → normal attack (random target)
+ * 1. If stunned → skip turn (return null action)
+ * 2. If silenced → normal attack only (no skills)
+ * 3. If an active skill is ready → use skill (priority: heal > control > damage)
+ * 4. Otherwise → normal attack (random target)
  *
  * Heal skills are only used when an ally is below HEAL_THRESHOLD HP ratio.
  *
@@ -243,23 +247,36 @@ export function tickCooldowns(cooldowns: CooldownMap): void {
  * @param enemies - All alive enemies.
  * @param cooldowns - Current cooldown state.
  * @param random - Injectable RNG.
+ * @param activeStatuses - Active status effects on this hero (for control check).
  * @returns An AIDecision with action type, optional skill, and target IDs.
+ *          Returns null if the unit is stunned and cannot act.
  *
  * @see design/gdd/battle-ai.md — AI Decision Loop
+ * @see design/gdd/status-system.md — Control States
  */
 export function decideAction(
   hero: HeroInstance,
   allies: ReadonlyArray<HeroInstance>,
   enemies: ReadonlyArray<HeroInstance>,
   cooldowns: CooldownMap,
-  random: RandomFn = Math.random
-): AIDecision {
+  random: RandomFn = Math.random,
+  activeStatuses: readonly AppliedStatus[] = [],
+): AIDecision | null {
   if (enemies.length === 0) {
     // No enemies — shouldn't happen but defensive
     return { action: ActionType.Attack, targetIds: [] }
   }
 
-  if (SKILL_PRIORITY_OVER_ATTACK) {
+  // Check control state from active statuses
+  const controlState = queryControlState(activeStatuses)
+
+  if (controlState === 'stunned') {
+    // Stunned: cannot act at all
+    return null
+  }
+
+  // Silenced: can only normal attack (skip skill check)
+  if (controlState !== 'silenced' && SKILL_PRIORITY_OVER_ATTACK) {
     const skillDecision = tryUseSkill(hero, allies, enemies, cooldowns, random)
     if (skillDecision) {
       return skillDecision
