@@ -59,7 +59,8 @@
 - 章节关卡，地图结构决定必须经过
 - 多阶段 Boss 机制（详见 Battle Engine GDD）
 - 宝箱品质最高（银~钻石箱）
-- Boss 战失败 = Run 结束
+- Boss 胜利后额外掉落判定：概率获得 S+ 武将和/或名器装备（独立于宝箱，详见 Battle Engine GDD）
+- Boss 战失败 = 扣除荣誉值（中间 Boss 扣 MINI_BOSS_HONOR_COST，最终 Boss 扣 FINAL_BOSS_HONOR_COST），荣誉值归零则 Run 结束
 
 #### 3. Recruit Node (招募节点)
 

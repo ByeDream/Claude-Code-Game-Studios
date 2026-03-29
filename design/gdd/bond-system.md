@@ -204,6 +204,7 @@ bondModifier[stat] = min(factionBonus[stat] + historicalBonus[stat], BOND_MODIFI
 | System | Direction | Nature | Hard/Soft |
 |--------|-----------|--------|-----------|
 | Battle Engine | Battle depends on Bond | 战斗读取羁绊效果 | Hard |
+| Enemy System | Enemy reads Bond | 敌方阵容羁绊计算 | Soft |
 | Hero Detail UI | UI depends on Bond | 显示羁绊信息 | Hard |
 
 ## Tuning Knobs

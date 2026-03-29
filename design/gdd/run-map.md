@@ -313,6 +313,7 @@ totalConnections = baseConnections + extraConnection
 | 宝箱预览：等级和数量 | hover 弹出 | 静态 | 战斗节点 hover |
 | 地图缩放和滚动 | 地图界面 | 实时 | 大型地图 |
 | 段分隔线（中间 Boss 之间） | Boss 层位置 | 静态 | 有中间 Boss 时 |
+| 荣誉值（当前/最大） | 地图界面右上角 | Boss 失败时更新 | 始终 |
 
 ## Acceptance Criteria
 
@@ -329,6 +330,7 @@ totalConnections = baseConnections + extraConnection
 - [ ] 中间 Boss 层正确分割地图为段
 - [ ] 生成算法在 MAX_RETRIES 内稳定产出合法地图
 - [ ] 所有 Tuning Knobs 可通过配置文件调整
+- [ ] 荣誉值在地图界面右上角常驻显示
 - [ ] Performance: 地图生成在 <100ms 内完成
 
 ## Open Questions

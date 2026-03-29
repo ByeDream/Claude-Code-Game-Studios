@@ -189,8 +189,34 @@ if (random() < critChance):
 
 **胜利结算**：
 1. 显示战斗回顾（MVP 武将、伤害统计）
-2. 获得战利品（Gold + Material + 可能的装备）— Economy/Loot 系统处理
-3. 返回 Run 地图
+2. 获得战利品（宝箱三选一）— Loot 系统处理
+3. Boss 战额外掉落：概率获得 S+ 武将和/或名器装备（仅 Boss 战）
+4. 返回 Run 地图
+
+#### Boss Exclusive Drops (Boss 战额外掉落)
+
+Boss 战胜利后，独立于宝箱的额外掉落判定：
+
+- S+ 武将加入概率：`BOSS_S_PLUS_DROP_RATE`（初始 0.2，待调优）
+- 名器装备掉落概率：`BOSS_NAMED_DROP_RATE`（初始 0.3，待调优）
+- 两者独立判定，可能同时掉落、只掉一个、或都不掉
+- 掉落的武将直接加入队伍（触发武将获取动画）
+- 掉落的装备触发 `triggerEquipFlow()`（立即选择装备给谁/卖/拆/弃）
+- 低等级武将（C-A）不从战斗掉落，通过招募节点获取
+
+```
+if (isBossVictory):
+    // 宝箱三选一照常（Loot 系统）
+    loot.generateChests(...)
+
+    // Boss 额外掉落（独立判定）
+    if (random() < BOSS_S_PLUS_DROP_RATE):
+        hero = rollBossHeroDrop(bossId)
+        addHeroToRoster(hero)
+    if (random() < BOSS_NAMED_DROP_RATE):
+        equipment = rollBossNamedDrop(bossId)
+        triggerEquipFlow(equipment)
+```
 
 **失败结算**（普通战斗/精英战斗）：
 - 无法获得奖励，直接返回地图继续前进
@@ -303,6 +329,8 @@ defaultTarget = randomPick(aliveEnemies)
 | MAX_HONOR | 100 | 50-200 | Run 初始荣誉值 |
 | MINI_BOSS_HONOR_COST | 30-50 | 20-60 | 中间 Boss 失败扣除荣誉值（随进度递增） |
 | FINAL_BOSS_HONOR_COST | 100 | 80-150 | 最终 Boss 失败扣除荣誉值 |
+| BOSS_S_PLUS_DROP_RATE | 0.2 | 0.05-0.4 | Boss 战 S+ 武将额外掉落概率 |
+| BOSS_NAMED_DROP_RATE | 0.3 | 0.1-0.5 | Boss 战名器装备额外掉落概率 |
 
 ## Edge Cases
 
@@ -338,7 +366,7 @@ defaultTarget = randomPick(aliveEnemies)
 
 | System | Direction | Nature | Hard/Soft |
 |--------|-----------|--------|-----------|
-| Economy | Battle → Economy | 奖励结算 | Hard |
+| Economy | Battle → Economy | 奖励结算（实际通过 Loot 系统中介，Battle Engine 不直接调用 Economy） | Hard |
 | Loot/Rewards | Battle → Loot | 战利品 | Hard |
 | Battle UI | Battle → UI | 渲染事件流 | Hard |
 | Event System | Event triggers Battle | 战斗节点触发 | Hard |
@@ -358,6 +386,8 @@ defaultTarget = randomPick(aliveEnemies)
 | `MAX_HONOR` | 100 | 50-200 | 更多容错空间 | 更严格 |
 | `MINI_BOSS_HONOR_COST` | 30-50 | 20-60 | Boss 失败惩罚更重 | 惩罚更轻 |
 | `FINAL_BOSS_HONOR_COST` | 100 | 80-150 | 最终 Boss 一次扣满（需与 MAX_HONOR 同步） | 允许多次挑战 |
+| `BOSS_S_PLUS_DROP_RATE` | 0.2 | 0.05-0.4 | S+ 武将更容易从 Boss 掉落 | S+ 武将更稀有 |
+| `BOSS_NAMED_DROP_RATE` | 0.3 | 0.1-0.5 | 名器更容易从 Boss 掉落 | 名器更稀有 |
 | `POSITIONS_PER_SIDE` | 5 | 4-6 | 更多站位选择 | 更少选择 |
 
 ## Acceptance Criteria

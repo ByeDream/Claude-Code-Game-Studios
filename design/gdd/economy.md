@@ -205,5 +205,5 @@ disassembleMaterial = equipLevel * DISASSEMBLE_RATIO
 | Question | Owner | Deadline | Resolution |
 |----------|-------|----------|-----------|
 | 精确的经济曲线需要 playtest 验证——当前数值为初始估算 | Economy Designer | Prototype phase | 通过 playtest 迭代调优 |
-| 是否需要第三种 Run 内资源（如"声望"影响劝降概率） | Game Designer | Vertical Slice | 视 playtest 反馈决定 |
+| 是否需要第三种 Run 内资源（如"声望"影响武将获取概率） | Game Designer | Vertical Slice | 视 playtest 反馈决定 |
 | 拆解/卖出 UI 的具体交互流程 | UX Designer | UI Design phase | 与 Equipment UI 同步设计 |

@@ -27,7 +27,11 @@
 
 #### 1. Chest System (宝箱机制)
 
-所有战利品以宝箱形式发放。每个宝箱打开后展示 3 个选项，玩家选择其一获得：
+所有战利品以宝箱形式发放。每个宝箱打开后展示 3 个选项，玩家选择其一获得。
+
+> **注意**：宝箱三选一（装备/Gold/Material）不包含武将卡。Boss 战的 S+ 武将和名器装备掉落由 Battle Engine 独立处理，不经过宝箱系统。详见 Battle Engine GDD 的 Boss Exclusive Drops 章节。
+
+**宝箱选项**：
 
 | 槽位 | 内容类型 | 说明 |
 |------|---------|------|
@@ -291,10 +295,12 @@ chestCount = BASE_COUNT[difficulty] + (nodeIndex >= BONUS_CHEST_THRESHOLD ? 1 : 
 | Question | Owner | Deadline | Resolution |
 |----------|-------|----------|-----------|
 | 所有数值（Gold/Mat 基础值、装备池权重、Named 概率）需配合 Economy + Hero Growth 做 playtest 联合校准 | Systems Designer | Prototype | playtest 迭代调优 |
-| Economy GDD 的战斗奖励公式需更新——从固定发放改为由 Loot 宝箱机制分配 | Game Designer | 下次 Economy 更新 | 修改 Economy GDD |
+| Economy GDD 的战斗奖励公式需更新——从固定发放改为由 Loot 宝箱机制分配 | Game Designer | 下次 Economy 更新 | **已解决**：Economy GDD 已添加 deprecated 注释 |
 | 是否需要"特殊选项"类别（如训练令、重铸券）扩展三选一的第四种选项类型 | Game Designer | Vertical Slice | 视 playtest 反馈 |
 | 宝箱开启动画时长——太短无仪式感，太长打断节奏 | UX Designer | Prototype | 原型验证后确定 |
 | 非战斗事件（宝箱节点、探索）调用 Loot 系统时的具体参数传递 | Game Designer | Event System GDD | 设计事件系统时确定 |
+
+## Acceptance Criteria
 
 - [ ] 宝箱等级由难度 + nodeIndex 正确计算（铁→铜→银→金→钻石）
 - [ ] 每个宝箱打开后展示 3 个选项：1 装备 + 1 Gold + 1 Material
