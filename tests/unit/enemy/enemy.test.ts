@@ -29,6 +29,7 @@ import {
   STANDARD_BATTLE_SIZE,
   BOSS_PHASE_THRESHOLD,
   NAMELESS_TEMPLATES,
+  ELITE_STAT_MULTIPLIER,
 } from '../../../src/gameplay/enemy/enemyConfig'
 
 import {
@@ -71,8 +72,8 @@ describe('Enemy Config constants', () => {
     expect(STANDARD_BATTLE_SIZE).toBe(5)
   })
 
-  it('test_config_namelessScalingRate_equals0Point1', () => {
-    expect(NAMELESS_SCALING_RATE).toBe(0.10)
+  it('test_config_namelessScalingRate_equals0Point15', () => {
+    expect(NAMELESS_SCALING_RATE).toBe(0.15)
   })
 
   it('test_config_bossStatMultiplier_equals1Point5', () => {
@@ -248,18 +249,19 @@ describe('createNamelessUnit', () => {
   })
 
   it('test_createNamelessUnit_nodeIndex10_statsScaledUpward', () => {
-    // At nodeIndex 10: scaledStat = round(baseStat * (1 + 10 * 0.1)) = round(baseStat * 2)
+    // At nodeIndex 10: scaledStat = round(baseStat * (1 + 10 * 0.15)) = round(baseStat * 2.5)
     const unit     = createNamelessUnit(NamelessTemplateType.Soldier, 10)
     const template = NAMELESS_TEMPLATES[NamelessTemplateType.Soldier]
 
-    // STR: round(8 * 2.0) = 16
-    expect(unit.scaledStats[StatType.STR]).toBe(Math.round(template.baseStats[StatType.STR] * 2.0))
+    // STR: round(16 * 2.5) = 40
+    expect(unit.scaledStats[StatType.STR]).toBe(Math.round(template.baseStats[StatType.STR] * 2.5))
   })
 
   it('test_createNamelessUnit_nodeIndex5_strCorrect', () => {
-    // 军团长 STR base = 14; nodeIndex 5 → round(14 * 1.5) = round(21) = 21
+    // 军团长 STR base = 24; nodeIndex 5, rate 0.15 → round(24 * 1.75) = round(42) = 42
     const unit = createNamelessUnit(NamelessTemplateType.LegionLeader, 5)
-    expect(unit.scaledStats[StatType.STR]).toBe(21)
+    const template = NAMELESS_TEMPLATES[NamelessTemplateType.LegionLeader]
+    expect(unit.scaledStats[StatType.STR]).toBe(Math.round(template.baseStats[StatType.STR] * (1 + 5 * 0.15)))
   })
 
   it('test_createNamelessUnit_uniqueIdsForDifferentInstanceIndexes', () => {
@@ -286,6 +288,24 @@ describe('createNamelessUnit', () => {
 
     expect(unit5.scaledStats[StatType.STR]).toBeGreaterThan(unit0.scaledStats[StatType.STR])
     expect(unit5.scaledStats[StatType.HP]).toBeGreaterThan(unit0.scaledStats[StatType.HP])
+  })
+
+  it('test_createNamelessUnit_eliteMultiplier_increasesAllStats', () => {
+    // Elite units should have higher stats than normal units at the same node
+    const normal = createNamelessUnit(NamelessTemplateType.Soldier, 5, 0, false)
+    const elite  = createNamelessUnit(NamelessTemplateType.Soldier, 5, 0, true)
+
+    for (const stat of Object.values(StatType)) {
+      expect(elite.scaledStats[stat]).toBeGreaterThan(normal.scaledStats[stat])
+    }
+  })
+
+  it('test_createNamelessUnit_eliteMultiplier_correctValue', () => {
+    // Elite multiplier should be exactly 1.25x
+    const normal = createNamelessUnit(NamelessTemplateType.LegionLeader, 0, 0, false)
+    const elite  = createNamelessUnit(NamelessTemplateType.LegionLeader, 0, 0, true)
+
+    expect(elite.scaledStats[StatType.STR]).toBe(Math.round(normal.scaledStats[StatType.STR] * 1.25))
   })
 
 })

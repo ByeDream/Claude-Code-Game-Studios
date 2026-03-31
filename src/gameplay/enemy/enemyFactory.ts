@@ -27,6 +27,7 @@ import {
   NAMELESS_TEMPLATES,
   NAMELESS_SCALING_RATE,
   BOSS_STAT_MULTIPLIER,
+  ELITE_STAT_MULTIPLIER,
   BASE_NAMELESS,
   NAMELESS_REDUCTION_STEP,
   STANDARD_BATTLE_SIZE,
@@ -86,15 +87,28 @@ function scaleAllNamelessStats(baseStats: BaseStats, nodeIndex: number): BaseSta
  * @param templateType  - Which nameless template to instantiate.
  * @param nodeIndex     - Map node index determining stat scaling (≥ 0).
  * @param instanceIndex - Index within the encounter to ensure unique IDs. Defaults to 0.
+ * @param isElite       - Whether this is an elite encounter (applies ELITE_STAT_MULTIPLIER). Defaults to false.
  * @returns A fully-initialised NamelessUnit with scaled stats and full HP.
  */
 export function createNamelessUnit(
   templateType: NamelessTemplateType,
   nodeIndex: number,
   instanceIndex: number = 0,
+  isElite: boolean = false,
 ): NamelessUnit {
   const template   = NAMELESS_TEMPLATES[templateType]
-  const scaledStats = scaleAllNamelessStats(template.baseStats, nodeIndex)
+  let scaledStats = scaleAllNamelessStats(template.baseStats, nodeIndex)
+
+  // Apply elite multiplier if applicable
+  if (isElite) {
+    scaledStats = {
+      [StatType.STR]: Math.max(1, Math.round(scaledStats[StatType.STR] * ELITE_STAT_MULTIPLIER)),
+      [StatType.INT]: Math.max(1, Math.round(scaledStats[StatType.INT] * ELITE_STAT_MULTIPLIER)),
+      [StatType.DEF]: Math.max(1, Math.round(scaledStats[StatType.DEF] * ELITE_STAT_MULTIPLIER)),
+      [StatType.HP]:  Math.max(1, Math.round(scaledStats[StatType.HP]  * ELITE_STAT_MULTIPLIER)),
+      [StatType.SPD]: Math.max(1, Math.round(scaledStats[StatType.SPD] * ELITE_STAT_MULTIPLIER)),
+    }
+  }
 
   return {
     id:           `${templateType}_node${nodeIndex}_inst${instanceIndex}`,

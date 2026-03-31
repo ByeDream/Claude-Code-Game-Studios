@@ -44,11 +44,11 @@ export const STANDARD_BATTLE_SIZE = 5
  * Formula:
  *   namelessStat = templateBaseStat * (1 + nodeIndex * NAMELESS_SCALING_RATE)
  *
- * Safe range: 0.05–0.15. Higher → nameless units are stronger in later nodes.
+ * Safe range: 0.05–0.20. Higher → nameless units are stronger in later nodes.
  *
  * @see design/gdd/enemy-system.md — Formulas: Nameless Unit Scaling
  */
-export const NAMELESS_SCALING_RATE = 0.10
+export const NAMELESS_SCALING_RATE = 0.15
 
 // ---------------------------------------------------------------------------
 // Boss multiplier
@@ -65,6 +65,23 @@ export const NAMELESS_SCALING_RATE = 0.10
  * @see design/gdd/enemy-system.md — Formulas: Boss Stat Multiplier
  */
 export const BOSS_STAT_MULTIPLIER = 1.5
+
+// ---------------------------------------------------------------------------
+// Elite encounter multiplier
+// ---------------------------------------------------------------------------
+
+/**
+ * Stat multiplier applied to all units in an Elite encounter.
+ * Applied on top of normal node-based scaling.
+ *
+ * Formula:
+ *   eliteStat = normalScaledStat * ELITE_STAT_MULTIPLIER
+ *
+ * Safe range: 1.1–1.4. Higher → more punishing elite fights.
+ *
+ * @see design/gdd/enemy-system.md — Elite Encounters
+ */
+export const ELITE_STAT_MULTIPLIER = 1.25
 
 // ---------------------------------------------------------------------------
 // Composition ratio
@@ -121,34 +138,35 @@ export const NAMELESS_TEMPLATES: Record<NamelessTemplateType, NamelessTemplate> 
 
   // ---------------------------------------------------------------------------
   // 小兵 (Soldier) — weakest fill unit, no skills
-  // Total base stats: STR:8 INT:6 DEF:7 HP:10 SPD:8 = 39
+  // Total base stats: STR:16 INT:12 DEF:14 HP:22 SPD:14 = 78
+  // Balanced against A-tier heroes (total ~125): soldiers are ~62% of hero power
   // ---------------------------------------------------------------------------
   [NamelessTemplateType.Soldier]: {
     type: NamelessTemplateType.Soldier,
     name: '小兵',
     baseStats: {
-      [StatType.STR]: 8,
-      [StatType.INT]: 6,
-      [StatType.DEF]: 7,
-      [StatType.HP]:  10,
-      [StatType.SPD]: 8,
+      [StatType.STR]: 16,
+      [StatType.INT]: 12,
+      [StatType.DEF]: 14,
+      [StatType.HP]:  22,
+      [StatType.SPD]: 14,
     },
     skill: null,
   },
 
   // ---------------------------------------------------------------------------
   // 军团长 (Legion Leader) — STR bias, passive "统领"
-  // Total: STR:14 INT:7 DEF:10 HP:12 SPD:9 = 52
+  // Total: STR:24 INT:12 DEF:18 HP:22 SPD:14 = 90
   // ---------------------------------------------------------------------------
   [NamelessTemplateType.LegionLeader]: {
     type: NamelessTemplateType.LegionLeader,
     name: '军团长',
     baseStats: {
-      [StatType.STR]: 14,
-      [StatType.INT]: 7,
-      [StatType.DEF]: 10,
-      [StatType.HP]:  12,
-      [StatType.SPD]: 9,
+      [StatType.STR]: 24,
+      [StatType.INT]: 12,
+      [StatType.DEF]: 18,
+      [StatType.HP]:  22,
+      [StatType.SPD]: 14,
     },
     skill: {
       name:    '统领',
@@ -162,17 +180,17 @@ export const NAMELESS_TEMPLATES: Record<NamelessTemplateType, NamelessTemplate> 
 
   // ---------------------------------------------------------------------------
   // 都尉 (Lieutenant) — DEF bias, passive "坚守"
-  // Total: STR:10 INT:8 DEF:15 HP:13 SPD:8 = 54
+  // Total: STR:16 INT:14 DEF:26 HP:24 SPD:12 = 92
   // ---------------------------------------------------------------------------
   [NamelessTemplateType.Lieutenant]: {
     type: NamelessTemplateType.Lieutenant,
     name: '都尉',
     baseStats: {
-      [StatType.STR]: 10,
-      [StatType.INT]: 8,
-      [StatType.DEF]: 15,
-      [StatType.HP]:  13,
-      [StatType.SPD]: 8,
+      [StatType.STR]: 16,
+      [StatType.INT]: 14,
+      [StatType.DEF]: 26,
+      [StatType.HP]:  24,
+      [StatType.SPD]: 12,
     },
     skill: {
       name:    '坚守',
@@ -186,17 +204,17 @@ export const NAMELESS_TEMPLATES: Record<NamelessTemplateType, NamelessTemplate> 
 
   // ---------------------------------------------------------------------------
   // 谋士 (Advisor) — INT bias, passive "鼓舞"
-  // Total: STR:8 INT:16 DEF:9 HP:11 SPD:10 = 54
+  // Total: STR:12 INT:28 DEF:14 HP:20 SPD:16 = 90
   // ---------------------------------------------------------------------------
   [NamelessTemplateType.Advisor]: {
     type: NamelessTemplateType.Advisor,
     name: '谋士',
     baseStats: {
-      [StatType.STR]: 8,
-      [StatType.INT]: 16,
-      [StatType.DEF]: 9,
-      [StatType.HP]:  11,
-      [StatType.SPD]: 10,
+      [StatType.STR]: 12,
+      [StatType.INT]: 28,
+      [StatType.DEF]: 14,
+      [StatType.HP]:  20,
+      [StatType.SPD]: 16,
     },
     skill: {
       name:    '鼓舞',
@@ -210,17 +228,17 @@ export const NAMELESS_TEMPLATES: Record<NamelessTemplateType, NamelessTemplate> 
 
   // ---------------------------------------------------------------------------
   // 骑兵队长 (Cavalry Leader) — SPD bias, passive "冲锋"
-  // Total: STR:12 INT:7 DEF:9 HP:11 SPD:15 = 54
+  // Total: STR:20 INT:12 DEF:14 HP:20 SPD:26 = 92
   // ---------------------------------------------------------------------------
   [NamelessTemplateType.CavalryLeader]: {
     type: NamelessTemplateType.CavalryLeader,
     name: '骑兵队长',
     baseStats: {
-      [StatType.STR]: 12,
-      [StatType.INT]: 7,
-      [StatType.DEF]: 9,
-      [StatType.HP]:  11,
-      [StatType.SPD]: 15,
+      [StatType.STR]: 20,
+      [StatType.INT]: 12,
+      [StatType.DEF]: 14,
+      [StatType.HP]:  20,
+      [StatType.SPD]: 26,
     },
     skill: {
       name:    '冲锋',

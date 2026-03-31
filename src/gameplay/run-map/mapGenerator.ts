@@ -186,8 +186,8 @@ function assignNodeTypes(
 function enforceConstraints(
   layers: MapLayer[],
   bossLayerSet: Set<number>,
-  finalBossLayerIndex: number,
-  random: RandomFn,
+  _finalBossLayerIndex: number,
+  _random: RandomFn,
 ): void {
   // Constraint 1: First layer must have battle
   if (layers[0].nodes[0].type !== NodeType.Battle) {

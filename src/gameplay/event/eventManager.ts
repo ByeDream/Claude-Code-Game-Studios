@@ -9,7 +9,6 @@
  */
 
 import type { HeroData } from '../hero/types'
-import { HeroTier } from '../hero/types'
 import type { EquipmentData } from '../equipment/types'
 import { EquipCategory } from '../equipment/types'
 import type { Economy } from '../economy/types'
@@ -23,11 +22,11 @@ import type {
   EventReward, MysteryResult,
   RecruitResult, ShopResult, RestResult,
 } from './types'
-import { ConditionType, RestChoice, RewardType, NodeType } from './types'
+import { ConditionType, RestChoice, RewardType } from './types'
 import {
   RECRUIT_POOL_SIZE, RECRUIT_TIER_MULTIPLIER, RECRUIT_TIER_WEIGHTS,
   SHOP_SIZE, SHOP_TIER_INTERVAL, NAMED_SHOP_CHANCE,
-  BASE_FALLBACK_GOLD, BASE_FALLBACK_MAT, FALLBACK_SCALING,
+  FALLBACK_SCALING,
   GENERIC_EVENTS,
 } from './eventConfig'
 
@@ -43,7 +42,7 @@ import {
  *
  * @param allHeroes - All hero definitions available in the campaign.
  * @param ownedHeroIds - IDs of heroes already in the roster.
- * @param nodeIndex - Current node position (for future tier weighting).
+ * @param _nodeIndex - Current node position (reserved for future tier weighting).
  * @param random - Injectable RNG.
  * @returns Array of RecruitCandidate with cost info.
  *
@@ -52,7 +51,7 @@ import {
 export function generateRecruitPool(
   allHeroes: HeroData[],
   ownedHeroIds: string[],
-  nodeIndex: number = 0,
+  _nodeIndex: number = 0,
   random: RandomFn = Math.random,
 ): RecruitCandidate[] {
   // Filter out already-owned heroes

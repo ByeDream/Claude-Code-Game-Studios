@@ -14,9 +14,9 @@
  */
 
 import type { HeroInstance, HeroData, Skill } from '../hero/types'
-import { StatType, ScalingStat, SkillType, TargetType, Faction, HeroTier, HeroVariant } from '../hero/types'
+import { StatType, ScalingStat, TargetType, Faction, HeroTier, HeroVariant } from '../hero/types'
 import { createHeroInstance } from '../hero/heroFactory'
-import { calculateFinalStat, calculateAllFinalStats, createZeroStats } from '../hero/statCalculation'
+import { calculateAllFinalStats, createZeroStats } from '../hero/statCalculation'
 import type { NamelessUnit } from '../enemy/types'
 import { evaluateBonds, applyBondResult } from '../bond/bondManager'
 import type { RandomFn, CooldownMap } from './types'
@@ -25,7 +25,6 @@ import type { BattleUnit, BattleState, BattleResult, BattleEvent } from './battl
 import { BattleEventType, BattleOutcome } from './battleEngineTypes'
 import {
   generateActionOrder,
-  filterAliveActions,
   decideAction,
   putOnCooldown,
   tickCooldowns,
@@ -33,8 +32,7 @@ import {
 } from './battleAI'
 import { calculatePhysicalDamage, calculateSkillDamage, calculateHealing } from './damageCalc'
 import { MAX_ROUNDS, HP_BATTLE_MULTIPLIER, SKILL_STATUS_KEYWORDS } from './battleConfig'
-import type { AppliedStatus, StatusEffect } from '../status/types'
-import { StatusEffectType } from '../status/types'
+import type { StatusEffect } from '../status/types'
 import {
   applyStatus,
   tickStatuses,
@@ -612,23 +610,12 @@ function applySkillStatuses(
 function recalculateUnitStats(unit: BattleUnit): void {
   if (unit.activeStatuses.length === 0) return
 
-  const statusMod = getStatusModifier(unit.activeStatuses)
-
-  // We need to apply status modifiers. Since finalStats are pre-computed at battle start
-  // with all other modifiers, we apply status modifiers multiplicatively on top.
-  // Note: This is a simplified approach — the status modifier affects the already-computed
-  // finalStats rather than going back to the full formula. This is acceptable because
-  // status modifiers are relative (+/- percentage), not absolute values.
-  // The effect is: effectiveStat = finalStat * (1 + statusModifier)
-  // We DON'T modify finalStats in place to avoid cumulative drift.
-  // Instead, the damage calc uses finalStats directly, and status modifiers
-  // are already factored into the HeroInstance stat calculation pipeline.
-  // For BattleUnits, status modifiers are tracked but stat recalc is a no-op
-  // since we use the direct finalStats for damage.
-  // The real impact comes from DoT/HoT ticks and control states.
-
-  // Future: If per-turn stat recalculation is needed, add a baseFinalStats
-  // field to BattleUnit and recompute finalStats = baseFinalStats * (1 + statusMod).
+  // getStatusModifier is called here for future stat recalculation support.
+  // Currently, status modifiers are tracked via activeStatuses but we do not
+  // recompute finalStats in-place to avoid cumulative drift. The real impact
+  // comes from DoT/HoT ticks and control states checked by isControlled().
+  // Future: store baseFinalStats on BattleUnit and apply the modifier here.
+  void getStatusModifier(unit.activeStatuses)
 }
 
 // ---------------------------------------------------------------------------

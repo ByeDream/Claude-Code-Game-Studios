@@ -11,19 +11,17 @@
  * @see design/gdd/event-system.md
  */
 
-import type { HeroData, HeroInstance } from '../hero/types'
+import type { HeroData } from '../hero/types'
 import { createHeroInstance } from '../hero/heroFactory'
-import type { Economy } from '../economy/types'
 import { createEconomy } from '../economy/economyManager'
 import type { EquipmentData } from '../equipment/types'
 import type { RandomFn } from '../battle/types'
 import { runBattle } from '../battle/battleEngine'
-import type { BattleResult } from '../battle/battleEngineTypes'
 import { BattleOutcome } from '../battle/battleEngineTypes'
-import type { RunMap, MapConfig } from '../run-map/types'
+import type { MapConfig } from '../run-map/types'
 import { generateMap, getSelectableNodes, getNodeById } from '../run-map/mapGenerator'
 import { NodeType } from '../event/types'
-import type { HistoricalEvent, RecruitCandidate, ShopItem, EventGameState } from '../event/types'
+import type { HistoricalEvent, EventGameState } from '../event/types'
 import { RestChoice } from '../event/types'
 import {
   generateRecruitPool, resolveRecruit,
@@ -31,7 +29,6 @@ import {
   resolveRestNode, resolveMysteryNode, applyEventRewards,
 } from '../event/eventManager'
 import { generateChests, openChest, claimOption } from '../loot/lootManager'
-import type { Chest, LootOption } from '../loot/types'
 import { Difficulty } from '../loot/types'
 import { DEFAULT_SMALL_MAP } from '../run-map/mapConfig'
 
